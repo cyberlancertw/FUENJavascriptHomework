@@ -1,0 +1,114 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <title>作業2</title>
+    <link rel="stylesheet" href="css/bootstrap.min.css" />
+    <script src="js/bootstrap.bundle.min.js"></script>
+    <style>
+        *{
+            margin: 5px;
+        }
+        div.warning{
+            width: 240px;
+            height: 20px;
+            color: firebrick;
+            text-align: right;
+        }
+    </style>
+</head>
+<body>
+    <form>
+        <label for="username">姓名：</label>
+        <input type="text" id="username" onblur="checkUsr()" />
+        <div class="warning" id="usrWarning">　</div>
+        <label for="password">密碼：</label>
+        <input type="password" id="password" onblur="checkPwd()" />
+        <div class="warning" id="pwdWarning"></div>
+        <label for="password">日期：</label>
+        <input type="text" id="date" placeholder="yyyy/mm/dd" onblur="checkDate()" />
+        <div class="warning" id="dateWarning"></div>
+    </form>
+    <script>
+        // id 不可空白,至少兩個字以上,全為中文
+        // pwd 不可空白,至少6個字以上,須包含英數字、特殊[!@#$%^&*]
+        // 日期 格式 西元/月/日(yyyy/mm/dd)  檢查日期   33,64,35,36,37,94,38,42
+
+
+        function checkUsr() {
+            let usrText = document.getElementById('username').value;
+            let usrWarning = document.getElementById('usrWarning');
+
+            if (usrText == '') {                                    // 和空字串 '' 做比較
+                usrWarning.innerHTML = '姓名不可空白';
+                return;
+            }
+            if (usrText.length < 2) {                               // .length 得字串長度
+                usrWarning.innerHTML = '至少要兩個字以上';
+                return;
+            }
+            for (let i in usrText) {
+                let ch = usrText.charCodeAt(i);                     // 用 .charCodeAt(i) 取出 index=i 的字元之 ASCII 值
+                if (ch < 0x4e00 || ch > 0x9fff) {
+                    usrWarning.innerHTML = '必須全為中文字';         // CCCII 中日韓文在 4E00 到 9FFF 之間
+                    return;
+                }
+            }
+            usrWarning.innerHTML = '　';
+        }
+        function checkPwd() {
+            let pwdText = document.getElementById('password').value;
+            let pwdWarning = document.getElementById('pwdWarning');
+
+            if (pwdText == '') {                            // 和空字串 '' 比較
+                pwdWarning.innerHTML = '密碼不可空白';
+                return;
+            }
+            if (pwdText.length < 6) {
+                pwdWarning.innerHTML = '至少要六個字以上';
+                return;
+            }
+            let regexp = new RegExp(/[a-zA-Z]+/);           // 正則表示式 []+ 為需要 [] 內的字元一個以上
+            if (!regexp.test(pwdText)) {                    // a-z 表 abcdefg.... yz
+                pwdWarning.innerHTML = '必須含有英文字母';    // A-Z 表 ABCDEFG.... YZ
+                return;
+            }
+            regexp = new RegExp(/[0-9]+/);                  // 老師教 charCodeAt(i) 一個個檢查，應該是比較省資源的做法
+            if (!regexp.test(pwdText)) {                    // 如果熟練正規表示式，寫起來較輕鬆
+                pwdWarning.innerHTML = '必須含有數字'; 
+                return;
+            }
+            regexp = new RegExp(/[!@#$%^&*]+/);
+            if (!regexp.test(pwdText)) {
+                pwdWarning.innerHTML = '必須含有特殊字元!@#$%^&*';
+                return;
+            }
+            pwdWarning.innerHTML = '　';
+        }
+        function checkDate() {
+            let dateText = document.getElementById('date').value;
+            let dateWarning = document.getElementById('dateWarning');
+
+            let regexp = new RegExp(/^[0-9]{4}\/((0[1-9])|(1[0-2]))\/((0[1-9])|(1[0-9])|(2[0-9])|(3[0-1]))$/);
+            if (!regexp.test(dateText)) {
+                dateWarning.innerHTML = '格式必須符合「年 / 月 / 日」';
+                return;
+            }
+            
+
+            let aryDate = dateText.split('/');
+            console.log(aryDate);
+            let dateObj = new Date(dateText);
+
+            aryDate2 = [dateObj.getDate(), dateObj.getMonth() + 1, dateObj.getFullYear()];
+            console.log(aryDate2);
+
+            if (dateObj.getDate() != aryDate[2] || dateObj.getMonth() + 1 != aryDate[1] || dateObj.getFullYear() != aryDate[0]) {
+                dateWarning.innerHTML = '不存在的日期';
+                return;
+            }
+            dateWarning.innerHTML = '　';
+        }
+    </script>
+</body>
+</html>

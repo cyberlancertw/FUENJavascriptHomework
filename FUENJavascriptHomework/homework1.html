@@ -1,0 +1,41 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <title>作業1</title>
+    <link rel="stylesheet" href="css/bootstrap.min.css" />
+    <script src="js/bootstrap.bundle.min.js"></script>
+    <style>
+        table{
+            background-color: lightblue;
+        }
+        td{
+            border: 4px solid white;
+            padding: 10px;
+        }
+    </style>
+</head>
+<body>
+    <table id="table99"></table>
+    <script>
+
+        var insertHTML = '<tr>';            // 初始要有第一個row的open tag<tr>
+        for (let i = 2; i < 10; i++) {
+
+            let multiResult = [];           // 把每一個乘積結果push給陣列
+
+            for (let j = 1; j < 10; j++) {
+                multiResult.push(`${i}*${j}=${i * j}`);         // 一個乘積結果
+            }
+            insertHTML += `<td>${multiResult.join('<br />')}</td>`;     // 用 Array.join 將所有元素以'<br />'串連，
+                                                                        // 前後再接上<td>和</td>，是完整的一列
+            if (i == 5) {
+                insertHTML += '</tr><tr>';    // 當5*9=45結束，</td>後多一個</tr>做為列的結束，多一個<tr>為下一列的開始
+            }
+        }
+        insertHTML += '</tr>';                // 結束要有最後一個row的closing tag</tr>
+        
+        document.getElementById('table99').innerHTML = insertHTML;      // 置換<table id="table99">的內容
+    </script>
+</body>
+</html>
