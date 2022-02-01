@@ -1,0 +1,127 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <title>作業5</title>
+    <link rel="stylesheet" href="css/bootstrap.min.css" />
+    <script src="js/bootstrap.bundle.min.js"></script>
+    <style>
+        *{
+            margin: 5px;
+        }
+        div.warning{
+            width: 240px;
+            height: 20px;
+            color: firebrick;
+            text-align: right;
+        }
+        #divCalendar{
+            width: 400px;
+        }
+        #tableCalendar{
+            width: 100%;
+            border: 2px solid lightgreen;
+            background-color: white;
+            text-align: center;
+        }
+        th{
+            height: 15px;
+            background-color: lightgreen;
+            width:20px;
+            padding: 10px;
+        }
+        td{
+            line-height: 40px;
+        }
+
+    </style>
+</head>
+<body>
+    <form>
+        <label for="password">日期：</label>
+        <input type="text" id="date" placeholder="yyyy/mm/dd" />
+        <div class="warning" id="dateWarning"></div>
+    </form>
+    <button id="btnSubmit" onclick="checkDate();">產生月曆</button>
+    <div id="divCalendar">
+
+    </div>
+    <script>
+        function getToday() {
+            let dateTimeNow = new Date();                   // 取現在日期物件
+            let nowYear = dateTimeNow.getFullYear();        // 取出現在的 年 月 日
+            let nowMonth = dateTimeNow.getMonth() < 9 ? `0${dateTimeNow.getMonth() + 1}` : (dateTimeNow.getMonth() + 1).toString();
+                                                            // 若月份是一到九月，前面補0
+            let nowDate = dateTimeNow.getDate() < 10 ? `0${dateTimeNow.getDate()}` : dateTimeNow.getDate().toString();
+                                                            // 若日期是一到九號，前面補0
+            return `${nowYear}/${nowMonth}/${nowDate}`;
+        }
+
+        function checkDate() {
+            let dateText = document.getElementById('date').value;       // 取輸入的值的字串
+            let dateWarning = document.getElementById('dateWarning');   // 取錯誤提示的元素
+            if (dateText == '') {                                       // 若空白直接按button，就show今天的月曆
+                dateText = getToday();
+                document.getElementById('date').value = dateText;
+            }
+
+            let regexp = new RegExp(/^[0-9]{4}\/((0[1-9])|(1[0-2]))\/((0[1-9])|(1[0-9])|(2[0-9])|(3[0-1]))$/);      // RegularExpression
+            if (!regexp.test(dateText)) {                                   // 不符合此格式時
+                dateWarning.innerHTML = '格式必須符合「年 / 月 / 日」';
+                return;
+            }
+
+
+            let dateByText = dateText.slice(-2);            // 取出輸入的結尾2字，即日期
+
+            let dateByObj = new Date(dateText);             // 將輸入字串轉為物件
+            
+            if (dateByText != dateByObj.getDate()) {        // 若日期有異，例如 2021/02/29 轉物件會變成 2021/03/01 則 .getDate() 會變，
+                dateWarning.innerHTML = '不存在的日期';      // 輸入的 dateText 日期與轉物件 dateByObj 的日期不一樣，表示不存在的日期
+                return;
+            }
+
+            dateWarning.innerHTML = '　';                    // 日期沒問題，清空錯誤的提示
+
+            let inputYear = dateByObj.getFullYear(), inputMonth = dateByObj.getMonth(), inputDate = dateByObj.getDate();
+            generateCalender(inputYear, inputMonth, inputDate);         // 輸入無誤就取出 年 月 日，交由 generateCalender() 去產生月曆
+            return;
+        }
+
+        function generateCalender(inputYear, inputMonth, inputDate) {
+            let genHTML = '<table id="tableCalendar"><tr><th>日</th><th>一</th><th>二</th><th>三</th><th>四</th><th>五</th><th>六</th></tr>';
+            let days = [];
+            let startDate = new Date(inputYear, inputMonth, 1);             // 當月第一天的 date object
+            let endDate = new Date(inputYear, inputMonth + 1, 0);           // 當月最後一天的 date object
+            let startDay = startDate.getDay();                              // 當月第一天是禮拜幾
+            let endDay = endDate.getDay();                                  // 當月最後一天是禮拜幾
+
+            for (let i = 0; i < startDay; i++) {                                    // 若當月第一天不是禮拜日，補齊上個月的天數
+                days.push(new Date(inputYear, inputMonth, 1 - (startDay - i)));
+            }
+            
+            for (let i = 0; i < endDate.getDate(); i++) {                           // 當月的所有天數
+                days.push(new Date(inputYear, inputMonth, 1 + i));
+            }
+
+            for (let i = 0; i < 6 - endDay; i++) {                                  // 若當月最後一天不是禮拜六，補齊下個月的天數
+                days.push(new Date(inputYear, inputMonth + 1, 1 + i));
+            }
+
+            for (let i in days) {
+
+                if (i % 7 == 0) {                                   // 禮拜日就補上 row 的開頭 opening tag <tr>
+                    genHTML += '<tr>'
+                }
+                genHTML += `<td>${days[i].getDate()}</td>`;         // 每個 cell
+
+                if (i % 7 == 6) {                                   // 禮拜六就補上 row 的結尾 closing tag </tr>
+                    genHTML += '</tr>'
+                }
+            }
+            genHTML += '</table>';                                  // 結尾
+            document.getElementById('divCalendar').innerHTML = genHTML;         // 將 <div id="divCalendar"> 的內容置換掉
+        }
+    </script>
+</body>
+</html>

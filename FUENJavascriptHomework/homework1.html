@@ -25,7 +25,7 @@
             let multiResult = [];           // 把每一個乘積結果push給陣列
 
             for (let j = 1; j < 10; j++) {
-                multiResult.push(`${i}*${j}=${i * j}`);         // 一個乘積結果
+                multiResult.push(`${i}*${j}=${i * j}`);                 // 一個乘積結果
             }
             insertHTML += `<td>${multiResult.join('<br />')}</td>`;     // 用 Array.join 將所有元素以'<br />'串連，
                                                                         // 前後再接上<td>和</td>，是完整的一列

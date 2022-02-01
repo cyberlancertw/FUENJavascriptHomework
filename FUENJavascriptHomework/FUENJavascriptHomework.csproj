@@ -84,8 +84,10 @@
     <Content Include="css\bootstrap.rtl.css" />
     <Content Include="css\bootstrap.rtl.min.css" />
     <Content Include="homework1.html" />
+    <Content Include="homework5.html" />
     <Content Include="homework2.html" />
     <Content Include="homework3.html" />
+    <Content Include="homeworkTN.html" />
     <Content Include="images\empty.png" />
     <Content Include="images\star.png" />
     <Content Include="js\bootstrap.bundle.js" />
