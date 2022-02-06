@@ -5,56 +5,69 @@
     <title>作業3</title>
     <link rel="stylesheet" href="css/bootstrap.min.css" />
     <script src="js/bootstrap.bundle.min.js"></script>
+    <style>
+        .show {
+            filter: grayscale(0);
+        }
+        .empty {
+            filter: grayscale(1);
+        }
+    </style>
     <script>
         
     </script>
 </head>
 <body>
-    <div id="hint">Hint: 單點滑鼠評分，雙擊取消取分</div>
+    <div id="hint">Hint: 單點滑鼠評分，雙擊取消評分</div>
     <div id="point">Point:</div>                
-
     <script>
         var point = -1;                         // 初始化point變數，-1表未決定評分，0到4分別表示評分1星到5星
-        for (let i = 0; i < 5; i++) {           // 動態產生<img>標籤，註冊onmouseover、onmouseleave、onclick、ondblclick事件對應的函式
-            document.write(`<img id="star${i}" src="images/empty.png" width="50" onmouseover="hoverImg(this)" onmouseleave="leaveImg(this)" onclick="clickImg(this)" ondblclick="dblclickImg()" />`);
+        for (let i = 0; i < 5; i++) {           // 動態產生<img>標籤
+            document.write(`<img id="star${i}" class="empty" src="images/star.png" width="50" />`);
+
+            let thisImg = document.getElementById('star' + i);
+
+            thisImg.addEventListener('mouseover', function () {             // 註冊移上去星星時的mouseover事件
+                if (point >= 0) {
+                    return;                         // 若評分已決定，什麼事都不做
+                }
+                let maxIdx = parseInt(this.id[this.id.length - 1]);    // 將<img>標籤的id最後一個字，也就是star0,star1..star5中的0,1,...5取出來，賦值給maxIdx
+                for (let i = 0; i < maxIdx + 1; i++) {             // 用迴圈把小於等於maxIdx的星星其class設為show，為亮，例如滑鼠移到第三顆星星，其id是star2，則maxIdx=2
+                    document.getElementById('star' + i).className = 'show';      // 迴圈將id=star0,star1,star2的星星都換class
+                }
+                document.getElementById('point').innerHTML = 'Point:' + (maxIdx + 1);       // 將<div id="point"> 裡的文字顯示成評分
+            });
+            thisImg.addEventListener('mouseleave', function () {            // 註冊滑鼠離開星星時的 mouseleave 事件
+                if (point >= 0) {
+                    return;                         // 若評分已決定，什麼事都不做
+                }
+                for (let i = 0; i < 5; i++) {       // 若評分未決定，而滑鼠離開星星，就將所有星星class設為empty得灰階（其實也可仿照上面hoverImg()找出maxIdx，
+                    document.getElementById('star' + i).className = 'empty';  // 只將左側的圖片設為灰階即可，可能較省資源
+                }
+                document.getElementById('point').innerHTML = 'Point:';      // <div id="point"> 不顯示評分
+
+            });
+
+            thisImg.addEventListener('click', function () {                 // 註冊點擊星星的 click 事件
+                if (point >= 0) {
+                    return;                         // 若評分已決定，什麼事都不做
+                }
+                point = parseInt(this.id[this.id.length - 1]);        // 將<img>標籤的id最後一個數字找出來，加1後顯示在<div id="point">
+                document.getElementById('point').innerHTML = 'Point:' + (point + 1);
+            });
+
+            thisImg.addEventListener('dblclick', function () {              // 註冊雙擊星星的 dblclick 事件
+                if (point == -1) {
+                    return;                         // 若未決定評分，什麼事都不做
+                }
+                point = -1;                         // 若已決定評分，則回到-1
+                document.getElementById('point').innerHTML = 'Point:';      // 顯示在<div id="point">
+                for (let i = 0; i < 5; i++) {       // 所有星星換class成灰階
+                    document.getElementById('star' + i).className = 'empty';
+                }
+            })
         }
-        function hoverImg(dom) {                // 滑鼠移上去時的事件，註冊時有傳入this引數，即此處的dom參數代表<img>標籤本身
-            if (point >= 0) {
-                return;                         // 若評分已決定，什麼事都不做
-            }
-            let maxIdx = parseInt(dom.id[dom.id.length-1]);    // 將<img>標籤的id最後一個字，也就是star0,star1..star5中的0,1,...5取出來，賦值給maxIdx
-            for (let i = 0; i < maxIdx + 1; i++) {             // 用迴圈把小於等於maxIdx的星星圖片換成star.png，例如滑鼠移到第三顆星星，其id是star2，則maxIdx=2
-                document.getElementById('star' + i).getAttributeNode('src').value = 'images/star.png';      // 迴圈將id=star0,star1,star2的<img>都換圖片
-            }
-            document.getElementById('point').innerHTML = 'Point:' + (maxIdx + 1);       // 將<div id="point"> 裡的文字顯示成評分
-            
-        }
-        function leaveImg(dom) {                // 滑鼠離開時的事件，註冊時有傳入this引數，即此處的dom參數代表<img>標籤本身
-            if (point >= 0) {
-                return;                         // 若評分已決定，什麼事都不做
-            }
-            for (let i = 0; i < 5; i++) {       // 若評分未決定，而滑鼠離開星星，就將所有星星圖片換成empty.png（其實也可仿照上面hoverImg()找出maxIdx，
-                document.getElementById('star' + i).getAttributeNode('src').value = 'images/empty.png';  // 只將左側的圖片換回empty即可，可能較省資源
-            }
-            document.getElementById('point').innerHTML = 'Point:';      // <div id="point"> 不顯示評分
-        }
-        function clickImg(dom) {                // 滑鼠點擊時的事件，註冊時有傳入this引數，即此處的dom參數代表<img>標籤本身
-            if (point >= 0) {
-                return;                         // 若評分已決定，什麼事都不做
-            }
-            point = parseInt(dom.id[dom.id.length - 1]);        // 將<img>標籤的id最後一個數字找出來，加1後顯示在<div id="point">
-            document.getElementById('point').innerHTML = 'Point:' + (point + 1);
-        }
-        function dblclickImg() {                // 滑鼠雙擊兩下時的事件
-            if (point == -1) {
-                return;                         // 若未決定評分，什麼事都不做
-            }
-            point = -1;                         // 若已決定評分，則回到-1
-            document.getElementById('point').innerHTML = 'Point:';      // 顯示在<div id="point">
-            for (let i = 0; i < 5; i++) {       // 所有星星換圖成empty.png
-                document.getElementById('star' + i).getAttributeNode('src').value = 'images/empty.png';
-            }
-        }
+
     </script>
     
     

@@ -43,10 +43,71 @@
         <div class="warning" id="dateWarning"></div>
     </form>
     <button id="btnSubmit" onclick="checkDate();">產生月曆</button>
+
+    <div id="selectArea">
+        <select id="seleYear">
+        </select>
+    </div>
+    
     <div id="divCalendar">
 
     </div>
     <script>
+
+        let docFrag = document.createDocumentFragment();
+
+        for (let i = 2010; i <= 2025; i++) {
+            let yearOption = document.createElement('option');
+            yearOption.setAttribute('value', i);
+            let optionText = document.createTextNode(i);
+            yearOption.appendChild(optionText);
+            docFrag.appendChild(yearOption);
+        }
+        let seleYearDOM = document.getElementById('seleYear');
+        seleYearDOM.appendChild(docFrag);
+        seleYearDOM.addEventListener('change', generateMonth );
+
+        function generateMonth() {
+            let domExist = document.getElementById('seleMonth');
+            if (domExist) {
+                document.getElementById('seleDate').remove();
+                domExist.remove();
+            }
+
+            let generateResult = document.createElement('select');
+            generateResult.setAttribute('id', 'seleMonth');
+            for (let i = 1; i <= 12; i++) {
+                let monthOption = document.createElement('option');
+                monthOption.setAttribute('value', i);
+                let optionText = document.createTextNode(i);
+                monthOption.appendChild(optionText);
+                generateResult.appendChild(monthOption);
+            }
+            document.getElementById('selectArea').appendChild(generateResult);
+            document.getElementById('seleMonth').addEventListener('change', generateDate);
+        }
+
+        function generateDate() {
+            let selectY = document.getElementById('seleYear').value;
+            let selectM = document.getElementById('seleMonth').value - 1;           // select 選到的月份要 -1 才是 date object 裡的月
+            let totalDate = new Date(selectY, selectM + 1, 0).getDate();            // +1推下一個月，日期0則退1天，得到當月最後一天
+
+            let domExist = document.getElementById('seleDate');
+            if (domExist) {
+                domExist.remove();
+            }
+            let generateResult = document.createElement('select');
+            generateResult.setAttribute('id', 'seleDate');
+            for (let i = 1; i <= totalDate; i++) {
+                let dateOption = document.createElement('option');
+                dateOption.setAttribute('value', i);
+                let optionText = document.createTextNode(i);
+                dateOption.appendChild(optionText);
+                generateResult.appendChild(dateOption);
+            }
+            document.getElementById('selectArea').appendChild(generateResult);
+            
+        }
         function getToday() {
             let dateTimeNow = new Date();                   // 取現在日期物件
             let nowYear = dateTimeNow.getFullYear();        // 取出現在的 年 月 日
@@ -120,7 +181,20 @@
                 }
             }
             genHTML += '</table>';                                  // 結尾
-            document.getElementById('divCalendar').innerHTML = genHTML;         // 將 <div id="divCalendar"> 的內容置換掉
+            //document.getElementById('divCalendar').innerHTML = genHTML;         // 將 <div id="divCalendar"> 的內容置換掉
+
+
+            let generateResult = document.createElement('table');
+            generateResult.setAttribute('id', 'tableCalendar');
+            let thead = generateResult.createTHead();
+            let theadRow = thead.insertRow();
+            let strThead = ['日', '一', '二', '三', '四', '五', '六'];
+            for (let str of strThead) {
+                let th = theadRow.insertCell();
+                th.innerText = str;
+            }
+            console.log(generateResult);
+            document.getElementById('divCalendar').appendChild(generateResult);
         }
     </script>
 </body>
