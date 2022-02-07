@@ -33,7 +33,13 @@
         td{
             line-height: 40px;
         }
-
+        thead td {
+            font-weight: 900;
+            height: 15px;
+            background-color: lightgreen;
+            width: 20px;
+            padding: 10px;
+        }
     </style>
 </head>
 <body>
@@ -106,6 +112,8 @@
                 generateResult.appendChild(dateOption);
             }
             document.getElementById('selectArea').appendChild(generateResult);
+
+            document.getElementById('seleDate').addEventListener('change', function () { generateCalender(selectY, selectM, document.getElementById('seleDate').value);});
             
         }
         function getToday() {
@@ -183,9 +191,17 @@
             genHTML += '</table>';                                  // 結尾
             //document.getElementById('divCalendar').innerHTML = genHTML;         // 將 <div id="divCalendar"> 的內容置換掉
 
-
             let generateResult = document.createElement('table');
             generateResult.setAttribute('id', 'tableCalendar');
+            
+            for (let i = 0; i < days.length; i += 7) {
+                let weekRow = generateResult.insertRow();
+                for (let j = 0; j < 7; j++) {
+                    let weekCell = weekRow.insertCell();
+                    weekCell.innerText = days[i + j].getDate();
+                }
+            }
+
             let thead = generateResult.createTHead();
             let theadRow = thead.insertRow();
             let strThead = ['日', '一', '二', '三', '四', '五', '六'];
@@ -193,7 +209,7 @@
                 let th = theadRow.insertCell();
                 th.innerText = str;
             }
-            console.log(generateResult);
+
             document.getElementById('divCalendar').appendChild(generateResult);
         }
     </script>
