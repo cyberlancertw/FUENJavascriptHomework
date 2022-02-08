@@ -1,0 +1,91 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <title>作業4</title>
+    <link rel="stylesheet" href="css/bootstrap.min.css" />
+    <script src="js/bootstrap.bundle.min.js"></script>
+    <style>
+        #carousel{
+            width: 620px;
+            height: 620px;
+            text-align: center;
+            border: 1px solid darkslateblue;
+        }
+        #showArea{
+            margin-top: 10px;
+        }
+        #controller{
+            width: 620px;
+            height: 50px;
+            background-color: darkslateblue;
+            text-align: center;
+            border: 1px solid darkslateblue;
+        }
+        img[id^="arrow"]{               /* img 標籤中 id 開頭 arrow 的，得 arrowL 和 arrowR */
+            margin-top: 5px;
+            width: 40px;
+        }
+        img[id^="pos"] {                /* img 標籤中 id 開頭 pos 的，得 pos0, pos1, ... pos6 */
+            margin-top: 5px;
+            width: 20px;
+            margin-left: 5px;
+            margin-right: 5px;
+        }
+
+    </style>
+</head>
+<body>
+    <div id="carousel">
+        <img id="showArea" src="images/cat0.jpg" />
+    </div>
+    <div id="controller">
+        <img id="arrowL" src="images/iconArrowLeft.png" />
+        <span id="position"></span>
+        <img id="arrowR" src="images/iconArrowRight.png" />
+    </div>
+    <script>
+        var posNow = 0;                 // 目前圖片編號
+
+        var runCarousel = window.setInterval(autoCarousel, 2000);       // 自動播放每兩秒執行 autoCarousel 函式
+        document.getElementById('showArea').addEventListener('mouseover', function () { window.clearInterval(runCarousel); });
+                                            // 給秀圖區註冊事件，當滑鼠滑入時，停止圖片輪播
+        document.getElementById('showArea').addEventListener('mouseleave', function () { runCarousel = window.setInterval(autoCarousel, 2000); });
+                                            // 給秀圖區註冊事件，當滑鼠滑出時，開始自動輪播
+        document.getElementById('arrowL').addEventListener('click', function () {           // 向左按鈕註冊點擊事件
+            document.getElementById('pos' + posNow).setAttribute('src', 'images/iconPositionFalse.png');    // 取消目前編號位置圖
+            posNow = posNow == 0 ? 6 : posNow - 1;                                                          // 若最左圖刖移到最右
+            document.getElementById('pos' + posNow).setAttribute('src', 'images/iconPositionTrue.png');     // 標示新位置圖
+            document.getElementById('showArea').setAttribute('src', 'images/cat' + posNow + '.jpg');        // 換新圖
+        });
+
+        document.getElementById('arrowR').addEventListener('click', function () {           // 向右按鈕註冊點擊事件
+            document.getElementById('pos' + posNow).setAttribute('src', 'images/iconPositionFalse.png');    // 取消目前編號位置圖
+            posNow = posNow == 6 ? 0 : posNow + 1;                                                          // 若最右圖則移到最左
+            document.getElementById('pos' + posNow).setAttribute('src', 'images/iconPositionTrue.png');     // 標示新位置圖
+            document.getElementById('showArea').setAttribute('src', 'images/cat' + posNow + '.jpg');        // 換新圖
+        })
+
+        for(let i = 0; i < 7; i++) {
+            let insertPosition = document.createElement('img');                     // 產生位置圖，有id=pos0,pos1,...,pos6
+            insertPosition.setAttribute('id', 'pos' + i);                           // 和圖片、並註冊點擊事件
+            insertPosition.setAttribute('src', 'images/iconPositionFalse.png');
+            document.getElementById('position').appendChild(insertPosition);
+            document.getElementById('pos' + i).addEventListener('click', function () {
+                document.getElementById('pos' + posNow).setAttribute('src', 'images/iconPositionFalse.png');    // 取消原位置
+                document.getElementById('showArea').setAttribute('src', 'images/cat' + i + '.jpg');         // 直接跳到該圖
+                this.setAttribute('src', 'images/iconPositionTrue.png');                                    // 標示新位置
+                posNow = i;
+            });
+        }
+        function autoCarousel() {
+            document.getElementById('pos' + posNow).setAttribute('src', 'images/iconPositionFalse.png');
+            posNow++;
+            posNow %= 7;
+            document.getElementById('pos' + posNow).setAttribute('src', 'images/iconPositionTrue.png');
+            document.getElementById('showArea').setAttribute('src', 'images/cat' + posNow + '.jpg');
+
+        }
+    </script>
+</body>
+</html>
