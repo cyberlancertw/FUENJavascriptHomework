@@ -78,6 +78,8 @@
                 posNow = i;
             });
         }
+        document.getElementById('pos0').setAttribute('src', 'images/iconPositionTrue.png');
+
         function autoCarousel() {
             document.getElementById('pos' + posNow).setAttribute('src', 'images/iconPositionFalse.png');
             posNow++;
