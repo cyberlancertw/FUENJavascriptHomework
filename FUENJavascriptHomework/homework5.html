@@ -54,6 +54,10 @@
         td.notThisMonth {
             color: grey;
         }
+        hr{
+            margin-top: 50px;
+            margin-bottom: 50px;
+        }
     </style>
 </head>
 <body>
@@ -64,6 +68,7 @@
     </form>
     <button id="btnSubmit" onclick="checkDate();">產生月曆</button>
 
+    <hr />
     <div id="selectArea">
         <select id="seleYear">
         </select>
@@ -75,6 +80,12 @@
     <script>
 
         let docFrag = document.createDocumentFragment();
+        let yearTitle = document.createElement('option');
+        //yearTitle.setAttribute('disabled',true);
+        yearTitle.setAttribute('value', 0);
+        let yearTitleText = document.createTextNode('年');
+        yearTitle.appendChild(yearTitleText);
+        docFrag.appendChild(yearTitle);
 
         for (let i = 2010; i <= 2025; i++) {
             let yearOption = document.createElement('option');
@@ -88,6 +99,9 @@
         seleYearDOM.addEventListener('change', generateMonth);
 
         function generateMonth() {
+            if (document.getElementById('seleYear').value == 0) {
+                return;
+            }
             let domExist = document.getElementById('seleMonth');
             if (domExist) {
                 document.getElementById('seleDate').remove();
@@ -96,6 +110,13 @@
 
             let generateResult = document.createElement('select');
             generateResult.setAttribute('id', 'seleMonth');
+
+            let monthTitle = document.createElement('option');
+            monthTitle.setAttribute('value', 0);
+            let monthTitleText = document.createTextNode('月');
+            monthTitle.appendChild(monthTitleText);
+            generateResult.appendChild(monthTitle);
+
             for (let i = 1; i <= 12; i++) {
                 let monthOption = document.createElement('option');
                 monthOption.setAttribute('value', i);
@@ -105,9 +126,15 @@
             }
             document.getElementById('selectArea').appendChild(generateResult);
             document.getElementById('seleMonth').addEventListener('change', generateDate);
+            
         }
 
         function generateDate() {
+
+            if (document.getElementById('seleMonth').value == 0) {
+                return;
+            }
+
             let selectY = document.getElementById('seleYear').value;
             let selectM = document.getElementById('seleMonth').value - 1;           // select 選到的月份要 -1 才是 date object 裡的月
             let totalDate = new Date(selectY, selectM + 1, 0).getDate();            // +1推下一個月，日期0則退1天，得到當月最後一天
@@ -118,6 +145,13 @@
             }
             let generateResult = document.createElement('select');
             generateResult.setAttribute('id', 'seleDate');
+
+            let dateTitle = document.createElement('option');
+            dateTitle.setAttribute('value', 0);
+            let dateTitleText = document.createTextNode('日');
+            dateTitle.appendChild(dateTitleText);
+            generateResult.appendChild(dateTitle);
+
             for (let i = 1; i <= totalDate; i++) {
                 let dateOption = document.createElement('option');
                 dateOption.setAttribute('value', i);
