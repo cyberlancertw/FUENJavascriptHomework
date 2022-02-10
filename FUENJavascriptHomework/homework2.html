@@ -25,7 +25,7 @@
         <label for="password">密碼：</label>
         <input type="password" id="password" onblur="checkPwd()" />
         <div class="warning" id="pwdWarning"></div>
-        <label for="password">日期：</label>
+        <label for="date">日期：</label>
         <input type="text" id="date" placeholder="yyyy/mm/dd" onblur="checkDate()" />
         <div class="warning" id="dateWarning"></div>
     </form>
@@ -33,6 +33,14 @@
         // id 不可空白,至少兩個字以上,全為中文
         // pwd 不可空白,至少6個字以上,須包含英數字、特殊[!@#$%^&*]
         // 日期 格式 西元/月/日(yyyy/mm/dd)  檢查日期   33,64,35,36,37,94,38,42
+        
+        console.log(new Date(2015, 4, 31));
+        console.log(new Date(2015, 4, 32));
+        console.log(new Date(2015, 4, 33));
+
+        console.log(new Date(2015, 4, 1));
+        console.log(new Date(2015, 4, 0));
+        console.log(new Date(2015, 4, -1));
 
 
         function checkUsr() {
@@ -91,7 +99,8 @@
             let dateText = document.getElementById('date').value;       // 取輸入的值的字串
             let dateWarning = document.getElementById('dateWarning');   // 取錯誤提示的元素
 
-            let regexp = new RegExp(/^[0-9]{4}\/((0[1-9])|(1[0-2]))\/((0[1-9])|(1[0-9])|(2[0-9])|(3[0-1]))$/);      // RegularExpression
+            //let regexp = new RegExp(/^[0-9]{0,4}\/((0[1-9])|(1[0-2]))\/((0[1-9])|(1[0-9])|(2[0-9])|(3[0-1]))$/);      // RegularExpression
+            let regexp = new RegExp(/^[0-9]{0,4}\/((0[1-9])|(1[0-2]))\/((0[1-9])|([12][0-9])|(3[0-1]))$/);      // RegularExpression
             if (!regexp.test(dateText)) {                                   // 不符合此格式時
                 dateWarning.innerHTML = '格式必須符合「年 / 月 / 日」';
                 return;

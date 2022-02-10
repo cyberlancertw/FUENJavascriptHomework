@@ -20,7 +20,9 @@
         #divCalendar {
             width: 400px;
         }
-
+        #btnSubmit{
+            margin-left: 300px;
+        }
         #tableCalendar {
             width: 100%;
             border: 2px solid lightgreen;
@@ -54,9 +56,13 @@
         td.notThisMonth {
             color: grey;
         }
+        /*
         hr{
             margin-top: 50px;
             margin-bottom: 50px;
+        }*/
+        #selectArea{
+            margin-top: 300px;
         }
     </style>
 </head>
@@ -68,7 +74,7 @@
     </form>
     <button id="btnSubmit" onclick="checkDate();">產生月曆</button>
 
-    <hr />
+    <!--<hr />-->
     <div id="selectArea">
         <select id="seleYear">
         </select>
@@ -81,17 +87,18 @@
 
         let docFrag = document.createDocumentFragment();
         let yearTitle = document.createElement('option');
-        //yearTitle.setAttribute('disabled',true);
         yearTitle.setAttribute('value', 0);
-        let yearTitleText = document.createTextNode('年');
-        yearTitle.appendChild(yearTitleText);
+        //let yearTitleText = document.createTextNode('年');
+        //yearTitle.appendChild(yearTitleText);
+        yearTitle.textContent = '年';
         docFrag.appendChild(yearTitle);
 
         for (let i = 2010; i <= 2025; i++) {
             let yearOption = document.createElement('option');
             yearOption.setAttribute('value', i);
-            let optionText = document.createTextNode(i);
-            yearOption.appendChild(optionText);
+            //let optionText = document.createTextNode(i);
+            //yearOption.appendChild(optionText);
+            yearOption.textContent = i;
             docFrag.appendChild(yearOption);
         }
         let seleYearDOM = document.getElementById('seleYear');
@@ -126,7 +133,7 @@
             }
             document.getElementById('selectArea').appendChild(generateResult);
             document.getElementById('seleMonth').addEventListener('change', generateDate);
-            
+
         }
 
         function generateDate() {
