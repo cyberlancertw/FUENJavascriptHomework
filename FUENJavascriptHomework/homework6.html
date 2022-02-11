@@ -1,0 +1,74 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <title>作業6 時鐘練習</title>
+    <link rel="stylesheet" href="css/bootstrap.min.css" />
+    <script src="js/bootstrap.bundle.min.js"></script>
+    <style>
+        #lineSec {
+            stroke: #8f9aa2;
+            stroke-width: 1px;
+        }
+        #lineMin {
+            stroke: #1f3344;
+            stroke-width: 2px;
+        }
+        #lineHour {
+            stroke: #000000;
+            stroke-width: 2px;
+        }
+        circle {
+            stroke: #8f9aa2;
+            stroke-width: 1px;
+            fill: none;
+        }
+        svg{
+            width: 110px;
+            height: 110px;
+        }
+    </style>
+</head>
+<body>
+    <figure>
+        <svg>
+            <circle cx="50" cy="50" r="50"></circle>
+            <line id="lineSec" x1="50" y1="50" x2="0" y2="0"></line>
+            <line id="lineMin" x1="50" y1="50" x2="0" y2="0"></line>
+            <line id="lineHour" x1="50" y1="50" x2="0" y2="0"></line>
+        </svg>
+    </figure>
+    <script>
+                                        
+        window.setInterval(tickMove, 100);          // 設定每100毫秒(十分之一秒)動一次
+
+        var domSec = document.getElementById('lineSec');    // 取<line id="lineSec"> 的 DOM 元素
+        var domMin = document.getElementById('lineMin');    // 取<line id="lineMin"> 的 DOM 元素
+        var domHour = document.getElementById('lineHour');  // 取<line id="lineHour"> 的 DOM 元素
+
+        function tickMove() {
+
+            let Now = new Date();                       // 取現在時間
+            let nowMillSec = Now.getMilliseconds();     // 取現在毫秒數
+            let nowSec = Now.getSeconds();              // 取現在秒數
+            let nowMin = Now.getMinutes();              // 取現在分鐘數
+            let nowHour = Now.getHours() % 12;          // 取現在小時，取模12即化為12小時制
+                                                        // (晚上10點則22%12=10)
+
+            let radSec = (nowSec + nowMillSec / 1000 - 15) * 6 * Math.PI / 180;     // 現在秒數換算徑度
+            let radMin = (nowMin + nowSec / 60 - 15) * 6 * Math.PI / 180;           // nowSec + nowMillSec/1000 得秒數
+            let radHour = (nowHour + nowMin / 60 - 3) * 30 * Math.PI / 180;         // -15 倒推15秒，才會從整點12開始順時針走
+                                                                                    // *6 換算得角度deg
+                                                                                    // * Math.PI / 180 換算得徑度rad
+            domSec.setAttribute('x2', 50 + 40 * Math.cos(radSec));   // 圓形參數式, r = 半徑, theta = 主幅角
+            domSec.setAttribute('y2', 50 + 40 * Math.sin(radSec));   // x座標 = r*Cos(theta),  y座標 = r*Sin(theta)
+
+            domMin.setAttribute('x2', 50 + 35 * Math.cos(radMin));   // x2 = r*cos(theta) 得 x 座標，+50 是因為圓心 x 平移
+            domMin.setAttribute('y2', 50 + 35 * Math.sin(radMin));   // y2 = r*sin(theta) 得 y 座標，+50 是因為圓心 y 平移
+
+            domHour.setAttribute('x2', 50 + 20 * Math.cos(radHour));
+            domHour.setAttribute('y2', 50 + 20 * Math.sin(radHour));
+        }
+    </script>
+</body>
+</html>

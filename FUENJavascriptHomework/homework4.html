@@ -52,14 +52,14 @@
                                             // 給秀圖區註冊事件，當滑鼠滑入時，停止圖片輪播
         document.getElementById('showArea').addEventListener('mouseleave', function () { runCarousel = window.setInterval(autoCarousel, 2000); });
                                             // 給秀圖區註冊事件，當滑鼠滑出時，開始自動輪播
-        document.getElementById('arrowL').addEventListener('click', function () {           // 向左按鈕註冊點擊事件
+        document.getElementById('arrowL').addEventListener('click', function () {                           // 向左按鈕註冊點擊事件
             document.getElementById('pos' + posNow).setAttribute('src', 'images/iconPositionFalse.png');    // 取消目前編號位置圖
             posNow = posNow == 0 ? 6 : posNow - 1;                                                          // 若最左圖刖移到最右
             document.getElementById('pos' + posNow).setAttribute('src', 'images/iconPositionTrue.png');     // 標示新位置圖
             document.getElementById('showArea').setAttribute('src', 'images/cat' + posNow + '.jpg');        // 換新圖
         });
 
-        document.getElementById('arrowR').addEventListener('click', function () {           // 向右按鈕註冊點擊事件
+        document.getElementById('arrowR').addEventListener('click', function () {                           // 向右按鈕註冊點擊事件
             document.getElementById('pos' + posNow).setAttribute('src', 'images/iconPositionFalse.png');    // 取消目前編號位置圖
             posNow = posNow == 6 ? 0 : posNow + 1;                                                          // 若最右圖則移到最左
             document.getElementById('pos' + posNow).setAttribute('src', 'images/iconPositionTrue.png');     // 標示新位置圖
@@ -73,12 +73,12 @@
             document.getElementById('position').appendChild(insertPosition);
             document.getElementById('pos' + i).addEventListener('click', function () {
                 document.getElementById('pos' + posNow).setAttribute('src', 'images/iconPositionFalse.png');    // 取消原位置
-                document.getElementById('showArea').setAttribute('src', 'images/cat' + i + '.jpg');         // 直接跳到該圖
-                this.setAttribute('src', 'images/iconPositionTrue.png');                                    // 標示新位置
+                document.getElementById('showArea').setAttribute('src', 'images/cat' + i + '.jpg');             // 直接跳到該圖
+                this.setAttribute('src', 'images/iconPositionTrue.png');                                        // 標示新位置
                 posNow = i;
             });
         }
-        document.getElementById('pos0').setAttribute('src', 'images/iconPositionTrue.png');
+        document.getElementById('pos0').setAttribute('src', 'images/iconPositionTrue.png');                     // 一開始給第一個位置改圖
 
         function autoCarousel() {
             document.getElementById('pos' + posNow).setAttribute('src', 'images/iconPositionFalse.png');

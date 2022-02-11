@@ -78,98 +78,94 @@
     <div id="selectArea">
         <select id="seleYear">
         </select>
+        <select id="seleMonth" style="visibility: hidden;">
+        </select>
+        <select id="seleDate" style="visibility: hidden;">
+        </select>
     </div>
 
     <div id="divCalendar">
-
     </div>
+
     <script>
+        var domYear = document.getElementById('seleYear');
+        var domMonth = document.getElementById('seleMonth');
+        var domDate = document.getElementById('seleDate');
+        var domCalendar = document.getElementById('divCalendar');
+
+        domYear.addEventListener('change', generateMonth);
+        domMonth.addEventListener('change', generateDate);
+        domDate.addEventListener('change', function () {
+            generateCalender(domYear.value,
+                             domMonth.value - 1,
+                             domDate.value);
+        });
 
         let docFrag = document.createDocumentFragment();
         let yearTitle = document.createElement('option');
         yearTitle.setAttribute('value', 0);
-        //let yearTitleText = document.createTextNode('年');
-        //yearTitle.appendChild(yearTitleText);
         yearTitle.textContent = '年';
         docFrag.appendChild(yearTitle);
 
         for (let i = 2010; i <= 2025; i++) {
             let yearOption = document.createElement('option');
             yearOption.setAttribute('value', i);
-            //let optionText = document.createTextNode(i);
-            //yearOption.appendChild(optionText);
             yearOption.textContent = i;
             docFrag.appendChild(yearOption);
         }
-        let seleYearDOM = document.getElementById('seleYear');
-        seleYearDOM.appendChild(docFrag);
-        seleYearDOM.addEventListener('change', generateMonth);
+        domYear.appendChild(docFrag);
+
+        docFrag = document.createDocumentFragment();
+        let monthTitle = document.createElement('option');
+        monthTitle.setAttribute('value', 0);
+        monthTitle.textContent = '月';
+        docFrag.appendChild(monthTitle);
+
+        for (let i = 1; i <= 12; i++) {
+            let monthOption = document.createElement('option');
+            monthOption.setAttribute('value', i);
+            monthOption.textContent = i;
+            docFrag.appendChild(monthOption);
+        }
+        domMonth.appendChild(docFrag);
 
         function generateMonth() {
-            if (document.getElementById('seleYear').value == 0) {
+
+            if (domYear.value == 0) {
                 return;
             }
-            let domExist = document.getElementById('seleMonth');
-            if (domExist) {
-                document.getElementById('seleDate').remove();
-                domExist.remove();
-            }
-
-            let generateResult = document.createElement('select');
-            generateResult.setAttribute('id', 'seleMonth');
-
-            let monthTitle = document.createElement('option');
-            monthTitle.setAttribute('value', 0);
-            let monthTitleText = document.createTextNode('月');
-            monthTitle.appendChild(monthTitleText);
-            generateResult.appendChild(monthTitle);
-
-            for (let i = 1; i <= 12; i++) {
-                let monthOption = document.createElement('option');
-                monthOption.setAttribute('value', i);
-                let optionText = document.createTextNode(i);
-                monthOption.appendChild(optionText);
-                generateResult.appendChild(monthOption);
-            }
-            document.getElementById('selectArea').appendChild(generateResult);
-            document.getElementById('seleMonth').addEventListener('change', generateDate);
-
+            domDate.style.visibility = 'hidden';
+            domMonth.style.visibility = 'visible';
+            domCalendar.innerHTML = '';
         }
 
         function generateDate() {
 
-            if (document.getElementById('seleMonth').value == 0) {
+            if (domMonth.value == 0) {
                 return;
             }
 
-            let selectY = document.getElementById('seleYear').value;
-            let selectM = document.getElementById('seleMonth').value - 1;           // select 選到的月份要 -1 才是 date object 裡的月
+            let selectY = domYear.value;
+            let selectM = domMonth.value - 1;           // select 選到的月份要 -1 才是 date object 裡的月
             let totalDate = new Date(selectY, selectM + 1, 0).getDate();            // +1推下一個月，日期0則退1天，得到當月最後一天
 
-            let domExist = document.getElementById('seleDate');
-            if (domExist) {
-                domExist.remove();
-            }
-            let generateResult = document.createElement('select');
-            generateResult.setAttribute('id', 'seleDate');
+            domDate.style.visibility = 'visible';
+            domDate.innerHTML = '';
 
+            let docFrag = document.createDocumentFragment();
             let dateTitle = document.createElement('option');
             dateTitle.setAttribute('value', 0);
-            let dateTitleText = document.createTextNode('日');
-            dateTitle.appendChild(dateTitleText);
-            generateResult.appendChild(dateTitle);
+            dateTitle.textContent = '日';
+            docFrag.appendChild(dateTitle);
 
             for (let i = 1; i <= totalDate; i++) {
                 let dateOption = document.createElement('option');
                 dateOption.setAttribute('value', i);
-                let optionText = document.createTextNode(i);
-                dateOption.appendChild(optionText);
-                generateResult.appendChild(dateOption);
+                dateOption.textContent = i;
+                docFrag.appendChild(dateOption);
             }
-            document.getElementById('selectArea').appendChild(generateResult);
-
-            document.getElementById('seleDate').addEventListener('change', function () { generateCalender(selectY, selectM, document.getElementById('seleDate').value); });
-
+            domDate.appendChild(docFrag);
+            domCalendar.innerHTML = '';
         }
         function getToday() {
             let dateTimeNow = new Date();                   // 取現在日期物件
@@ -252,11 +248,11 @@
             //genHTML += '</table>';                                  // 結尾
             //document.getElementById('divCalendar').innerHTML = genHTML;         // 將 <div id="divCalendar"> 的內容置換掉
 
-            let generateResult = document.createElement('table');
-            generateResult.setAttribute('id', 'tableCalendar');
+            let nodeTable = document.createElement('table');
+            nodeTable.setAttribute('id', 'tableCalendar');
 
             for (let i = 0; i < days.length; i += 7) {
-                let weekRow = generateResult.insertRow();
+                let weekRow = nodeTable.insertRow();
                 for (let j = 0; j < 7; j++) {
                     let thisDate = days[i + j];
                     let weekCell = weekRow.insertCell();
@@ -270,7 +266,7 @@
                 }
             }
 
-            let thead = generateResult.createTHead();
+            let thead = nodeTable.createTHead();
             let theadRow = thead.insertRow();
             let strThead = ['日', '一', '二', '三', '四', '五', '六'];
             for (let str of strThead) {
@@ -278,7 +274,7 @@
                 th.innerText = str;
             }
 
-            document.getElementById('divCalendar').appendChild(generateResult);
+            document.getElementById('divCalendar').appendChild(nodeTable);
         }
     </script>
 </body>
