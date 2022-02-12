@@ -20,9 +20,7 @@
         #divCalendar {
             width: 400px;
         }
-        #btnSubmit{
-            margin-left: 300px;
-        }
+
         #tableCalendar {
             width: 100%;
             border: 2px solid lightgreen;
@@ -56,14 +54,11 @@
         td.notThisMonth {
             color: grey;
         }
-        /*
         hr{
             margin-top: 50px;
             margin-bottom: 50px;
-        }*/
-        #selectArea{
-            margin-top: 300px;
         }
+
     </style>
 </head>
 <body>
@@ -74,7 +69,6 @@
     </form>
     <button id="btnSubmit" onclick="checkDate();">產生月曆</button>
 
-    <!--<hr />-->
     <div id="selectArea">
         <select id="seleYear">
         </select>
@@ -97,17 +91,17 @@
         domMonth.addEventListener('change', generateDate);
         domDate.addEventListener('change', function () {
             generateCalender(domYear.value,
-                             domMonth.value - 1,
+                             domMonth.value - 1,                // Date 物件的 Month 比實際上月份少1
                              domDate.value);
         });
 
-        let docFrag = document.createDocumentFragment();
+        let docFrag = document.createDocumentFragment();            // 初始化填入<select>年份
         let yearTitle = document.createElement('option');
         yearTitle.setAttribute('value', 0);
         yearTitle.textContent = '年';
         docFrag.appendChild(yearTitle);
 
-        for (let i = 2010; i <= 2025; i++) {
+        for (let i = 2010; i <= 2025; i++) {                        // 作業要求可以選擇 2010 年到 2025 年
             let yearOption = document.createElement('option');
             yearOption.setAttribute('value', i);
             yearOption.textContent = i;
@@ -115,13 +109,13 @@
         }
         domYear.appendChild(docFrag);
 
-        docFrag = document.createDocumentFragment();
+        docFrag = document.createDocumentFragment();                // 初始化填入<select>月份
         let monthTitle = document.createElement('option');
         monthTitle.setAttribute('value', 0);
         monthTitle.textContent = '月';
         docFrag.appendChild(monthTitle);
 
-        for (let i = 1; i <= 12; i++) {
+        for (let i = 1; i <= 12; i++) {                             // 月份可選擇 1 月到 12 月
             let monthOption = document.createElement('option');
             monthOption.setAttribute('value', i);
             monthOption.textContent = i;
@@ -131,17 +125,18 @@
 
         function generateMonth() {
 
-            if (domYear.value == 0) {
+            if (domYear.value == 0) {                   // 選在標題則不動作
                 return;
             }
-            domDate.style.visibility = 'hidden';
-            domMonth.style.visibility = 'visible';
+            domDate.style.visibility = 'hidden';        // 日期select藏起來
+            domMonth.style.visibility = 'visible';      // 月份select秀出來
             domCalendar.innerHTML = '';
+            domMonth.value = 0;                         // 讓產生出來的月份select定在標題，避免原地選不會觸發change事件的毛病
         }
 
         function generateDate() {
 
-            if (domMonth.value == 0) {
+            if (domMonth.value == 0) {                  // 選在標題則不動作
                 return;
             }
 
@@ -149,10 +144,10 @@
             let selectM = domMonth.value - 1;           // select 選到的月份要 -1 才是 date object 裡的月
             let totalDate = new Date(selectY, selectM + 1, 0).getDate();            // +1推下一個月，日期0則退1天，得到當月最後一天
 
-            domDate.style.visibility = 'visible';
+            domDate.style.visibility = 'visible';       // 日期select秀出來
             domDate.innerHTML = '';
 
-            let docFrag = document.createDocumentFragment();
+            let docFrag = document.createDocumentFragment();            // 初始化填入<select>月份
             let dateTitle = document.createElement('option');
             dateTitle.setAttribute('value', 0);
             dateTitle.textContent = '日';
@@ -210,70 +205,100 @@
 
         function generateCalender(inputYear, inputMonth, inputDate) {
 
-            let calendarDOM = document.getElementById('tableCalendar');
-            if (calendarDOM) {
-                calendarDOM.remove();
-            }
-            //let genHTML = '<table id="tableCalendar"><tr><th>日</th><th>一</th><th>二</th><th>三</th><th>四</th><th>五</th><th>六</th></tr>';
-            let days = [];
-            let startDate = new Date(inputYear, inputMonth, 1);             // 當月第一天的 date object
-            let endDate = new Date(inputYear, inputMonth + 1, 0);           // 當月最後一天的 date object
-            let startDay = startDate.getDay();                              // 當月第一天是禮拜幾
-            let endDay = endDate.getDay();                                  // 當月最後一天是禮拜幾
-
-            for (let i = 0; i < startDay; i++) {                                    // 若當月第一天不是禮拜日，補齊上個月的天數
-                days.push(new Date(inputYear, inputMonth, 1 - (startDay - i)));
+            let domCalendar = document.getElementById('tableCalendar');
+            if (domCalendar) {                                                // 若已產生過日曆就刪掉他，不然會一直累加
+                domCalendar.remove();
             }
 
-            for (let i = 0; i < endDate.getDate(); i++) {                           // 當月的所有天數
-                days.push(new Date(inputYear, inputMonth, 1 + i));
-            }
+            // 舊寫法，用太多 Date object 還是算了
+            //let days = [];
+            //let startDate = new Date(inputYear, inputMonth, 1);             // 當月第一天的 date object
+            //let endDate = new Date(inputYear, inputMonth + 1, 0);           // 當月最後一天的 date object
+            //let startDay = startDate.getDay();                              // 當月第一天是禮拜幾
+            //let endDay = endDate.getDay();                                  // 當月最後一天是禮拜幾
 
-            for (let i = 0; i < 6 - endDay; i++) {                                  // 若當月最後一天不是禮拜六，補齊下個月的天數
-                days.push(new Date(inputYear, inputMonth + 1, 1 + i));
-            }
+            //for (let i = 0; i < startDay; i++) {                                    // 若當月第一天不是禮拜日，補齊上個月的天數
+            //    days.push(new Date(inputYear, inputMonth, 1 - (startDay - i)));
+            //}
+
+            //for (let i = 0; i < endDate.getDate(); i++) {                           // 當月的所有天數
+            //    days.push(new Date(inputYear, inputMonth, 1 + i));
+            //}
+
+            //for (let i = 0; i < 6 - endDay; i++) {                                  // 若當月最後一天不是禮拜六，補齊下個月的天數
+            //    days.push(new Date(inputYear, inputMonth + 1, 1 + i));
+            //}
 
 
-            //for (let i in days) {
+            //let nodeTable = document.createElement('table');
+            //nodeTable.setAttribute('id', 'tableCalendar');
 
-            //    if (i % 7 == 0) {                                   // 禮拜日就補上 row 的開頭 opening tag <tr>
-            //        genHTML += '<tr>'
-            //    }
-            //    genHTML += `<td>${days[i].getDate()}</td>`;         // 每個 cell
-
-            //    if (i % 7 == 6) {                                   // 禮拜六就補上 row 的結尾 closing tag </tr>
-            //        genHTML += '</tr>'
+            //for (let i = 0; i < days.length; i += 7) {
+            //    let weekRow = nodeTable.insertRow();
+            //    for (let j = 0; j < 7; j++) {
+            //        let thisDate = days[i + j];
+            //        let weekCell = weekRow.insertCell();
+            //        if (thisDate.getMonth() == inputMonth && thisDate.getDate() == inputDate) {
+            //            weekCell.className = 'todayCell';
+            //        }
+            //        if (thisDate.getMonth() != inputMonth) {
+            //            weekCell.className = 'notThisMonth';
+            //        }
+            //        weekCell.innerText = days[i + j].getDate();
             //    }
             //}
-            //genHTML += '</table>';                                  // 結尾
-            //document.getElementById('divCalendar').innerHTML = genHTML;         // 將 <div id="divCalendar"> 的內容置換掉
+
+            let days = [];
+            let startDate = new Date(inputYear, inputMonth, 1);               // 當月第一天的 date object
+            let endDate = new Date(inputYear, inputMonth + 1, 0);             // 當月最後一天的 date object
+            let startDay = startDate.getDay();                                // 當月第一天是禮拜幾
+            let endDay = endDate.getDay();                                    // 當月最後一天是禮拜幾
+            let lastMonthDate = new Date(inputYear, inputMonth, 0).getDate(); // 上個月總天數
+            let thisMonthDate = endDate.getDate();                            // 當月總天數
+
+            for (let i = 0; i < startDay; i++) {                    // 若當月第一天不是禮拜日，補齊上個月的天數
+                days.push(- startDay + 1 + i);
+            }
+            for (let i = 1; i <= thisMonthDate; i++) {              // 當月的所有天數
+                days.push(i);
+            }
+            for (let i = 1; i < 7 - endDay; i++) {                  // 若當月最後一天不是禮拜六，補齊下個月的天數
+                days.push(thisMonthDate + i);
+            }
 
             let nodeTable = document.createElement('table');
             nodeTable.setAttribute('id', 'tableCalendar');
 
             for (let i = 0; i < days.length; i += 7) {
-                let weekRow = nodeTable.insertRow();
+                let weekRow = nodeTable.insertRow();                            // 開始一個 tr
                 for (let j = 0; j < 7; j++) {
                     let thisDate = days[i + j];
-                    let weekCell = weekRow.insertCell();
-                    if (thisDate.getMonth() == inputMonth && thisDate.getDate() == inputDate) {
-                        weekCell.className = 'todayCell';
-                    }
-                    if (thisDate.getMonth() != inputMonth) {
+                    let weekCell = weekRow.insertCell();                        // 即 td
+
+                    if (thisDate < 1) {                                         // days 存的若是負數表示上個月的日期
+                        weekCell.textContent = lastMonthDate + thisDate;
                         weekCell.className = 'notThisMonth';
                     }
-                    weekCell.innerText = days[i + j].getDate();
+                    else if (thisDate > thisMonthDate) {                        // 下個月的日期
+                        weekCell.textContent = thisDate - thisMonthDate;
+                        weekCell.className = 'notThisMonth';
+                    }
+                    else if (thisDate == inputDate) {                           // select 選的當日，就用專屬的 class
+                        weekCell.textContent = thisDate;
+                        weekCell.className = 'todayCell';
+                    }
+                    else {                                                      // 這個月其它天數
+                        weekCell.textContent = thisDate;
+                    }
                 }
             }
-
-            let thead = nodeTable.createTHead();
+            let thead = nodeTable.createTHead();                                // thead 若在前面加，不知道為何 class 會有問題
             let theadRow = thead.insertRow();
             let strThead = ['日', '一', '二', '三', '四', '五', '六'];
             for (let str of strThead) {
                 let th = theadRow.insertCell();
-                th.innerText = str;
+                th.textContent = str;
             }
-
             document.getElementById('divCalendar').appendChild(nodeTable);
         }
     </script>

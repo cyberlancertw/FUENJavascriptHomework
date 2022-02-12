@@ -53,7 +53,7 @@
             let nowSec = Now.getSeconds();              // 取現在秒數
             let nowMin = Now.getMinutes();              // 取現在分鐘數
             let nowHour = Now.getHours() % 12;          // 取現在小時，取模12即化為12小時制
-                                                        // (晚上10點則22%12=10)
+                                                        // (eg: 晚上10點則22%12=10)
 
             let radSec = (nowSec + nowMillSec / 1000 - 15) * 6 * Math.PI / 180;     // 現在秒數換算徑度
             let radMin = (nowMin + nowSec / 60 - 15) * 6 * Math.PI / 180;           // nowSec + nowMillSec/1000 得秒數
