@@ -1,0 +1,113 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <title>作業7 滑動選單練習</title>
+    <link rel="stylesheet" href="css/bootstrap.min.css" />
+    <script src="js/bootstrap.bundle.min.js"></script>
+    <style>
+
+        div.containerTitle {
+            position: relative;
+
+        }
+        [id^="title"] {
+            position: relative;
+            background-color: wheat;
+            padding-top: 10px;
+            padding-bottom: 10px;
+            text-align: center;
+        }
+        [id^="menu"] {
+            position: absolute;
+            width: 100%;
+            border: 2px solid white;
+            background-color: wheat;
+            padding-top: 10px;
+            padding-bottom: 10px;
+            text-align: center;
+            visibility: hidden;
+        }
+        .flying{
+            visibility: visible;
+            animation-duration: 0.4s;
+            animation-name: flyDownward;
+        }
+        .stopFly {
+            visibility: hidden;
+        }
+        @keyframes flyDownward{
+            from{
+                top: 100px;
+            }
+            to{
+                top: 43px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div id="nav" class="row g-0">
+        <div class="col containerTitle"><div id="title0">阿拉伯數字</div><div id="menu0"></div></div>
+        <div class="col containerTitle"><div id="title1">九字護身法</div><div id="menu1"></div></div>
+        <div class="col containerTitle"><div id="title2">台灣生肖</div><div id="menu2"></div></div>
+        <div class="col containerTitle"><div id="title3">日本旧暦</div><div id="menu3"></div></div>
+        <div class="col containerTitle"><div id="title4">英文月份</div><div id="menu4"></div></div>
+        <div class="col containerTitle"><div id="title5">天干</div><div id="menu5"></div></div>
+        <div class="col containerTitle"><div id="title6">德文數字</div><div id="menu6"></div></div>
+        <div class="col containerTitle"><div id="title7">精神答數</div><div id="menu7"></div></div>
+        <div class="col containerTitle"><div id="title8">地支</div><div id="menu8"></div></div>
+    </div>
+    let menus = [['1', '2', '3', '4', '5', '6', '7', '8', '9'],
+    ['臨', '兵', '闘', '者', '皆', '陣', '列', '在', '前'],
+    ['鼠', '牛', '虎', '兔', '龍', '蛇', '馬', '羊', '猴', '雞', '狗', '豬'],
+    ['睦月', '如月', '弥生', '卯月', '皐月', '水無月', '文月', '葉月', '長月', '神無月', '霜月', '師走'],
+    ['January', 'Febuary', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'],
+    ['甲', '乙', '丙', '丁', '戊', '己', '庚', '辛', '壬', '癸'],
+    ['eins', 'zwei', 'drei', 'vier', 'fünf', 'sechs', 'sieben', 'acht', 'neun', 'zehn'],
+    ['雄壯', '威武', '嚴肅', '剛直', '安靜', '堅強', '確實', '速捷', '沉著', '忍耐', '機警', '勇敢'],
+    ['子', '丑', '寅', '卯', '辰', '巳', '午', '未', '申', '酉', '戌', '亥']];
+    let menus = [['1', '2', '3', '4', '5', '6', '7', '8', '9'],
+    ['臨', '兵', '闘', '者', '皆', '陣', '列', '在', '前'],
+    ['鼠', '牛', '虎', '兔', '龍', '蛇', '馬', '羊', '猴', '雞', '狗', '豬'],
+    ['睦月', '如月', '弥生', '卯月', '皐月', '水無月', '文月', '葉月', '長月', '神無月', '霜月', '師走'],
+    ['January', 'Febuary', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'],
+    ['甲', '乙', '丙', '丁', '戊', '己', '庚', '辛', '壬', '癸'],
+    ['eins', 'zwei', 'drei', 'vier', 'fünf', 'sechs', 'sieben', 'acht', 'neun', 'zehn'],
+    ['雄壯', '威武', '嚴肅', '剛直', '安靜', '堅強', '確實', '速捷', '沉著', '忍耐', '機警', '勇敢'],
+    ['子', '丑', '寅', '卯', '辰', '巳', '午', '未', '申', '酉', '戌', '亥']];
+    <script>
+        let menus = [['1', '2', '3', '4', '5', '6', '7', '8', '9'],
+        ['臨', '兵', '闘', '者', '皆', '陣', '列', '在', '前'],
+        ['鼠', '牛', '虎', '兔', '龍', '蛇', '馬', '羊', '猴', '雞', '狗', '豬'],
+        ['睦月', '如月', '弥生', '卯月', '皐月', '水無月', '文月', '葉月', '長月', '神無月', '霜月', '師走'],
+        ['January', 'Febuary', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'],
+        ['甲', '乙', '丙', '丁', '戊', '己', '庚', '辛', '壬', '癸'],
+        ['eins', 'zwei', 'drei', 'vier', 'fünf', 'sechs', 'sieben', 'acht', 'neun', 'zehn'],
+        ['雄壯', '威武', '嚴肅', '剛直', '安靜', '堅強', '確實', '速捷', '沉著', '忍耐', '機警', '勇敢'],
+        ['子', '丑', '寅', '卯', '辰', '巳', '午', '未', '申', '酉', '戌', '亥']];
+
+
+        for (let i in menus) {
+            let domMenu = document.getElementById('menu' + i);
+            let domTitle = document.getElementById('title' + i);
+            domMenu.innerHTML = menus[i].join('<br />');
+            domTitle.addEventListener('mouseover', menuFly);
+            domTitle.addEventListener('mouseleave', menuStop);
+
+        }
+        function menuFly() {
+            let id = this.id.slice(-1);
+            let domMenu = document.getElementById('menu' + id);
+            domMenu.classList.remove('stopFly');
+            domMenu.classList.add('flying');
+        }
+        function menuStop() {
+            let id = this.id.slice(-1);
+            let domMenu = document.getElementById('menu' + id);
+            domMenu.classList.remove('flying');
+            domMenu.classList.add('stopFly');
+        }
+    </script>
+</body>
+</html>
