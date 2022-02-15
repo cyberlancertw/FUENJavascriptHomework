@@ -10,13 +10,22 @@
             width: 60px;
             margin-right: 10px;
         }
-        [id^="saleP"]{
-            margin-bottom: 10px;
+        [id^="area"]{
+            width: 650px;
+            height: 380px;
+            padding: 10px;
         }
+        [id^="saleP"]{
+            margin: 15px;
+        }
+        #areaData,#areaLine,#areaRect,#areaCirc{
+            float: left;
+        }
+
         svg{
             border: 1px solid gray;
         }
-        #axisX,#axisY{
+        [id^="axis"]{
             stroke: #0000ff;
             stroke-width: 2px;
         }
@@ -40,20 +49,39 @@
             font-size: 14px;
             font-family: '微軟正黑體';
         }
+        [id^="rect0"]{
+            stroke: #f2575f;
+            fill: #f2575f;
+        }
+        [id^="rect1"]{
+            stroke: #639ee7;
+            fill:#639ee7;
+        }
+        [id^="rect2"] {
+            stroke: #6ce069;
+            fill: #6ce069;
+        }
+        [id^="rect3"] {
+            stroke: #a89faa;
+            fill: #a89faa;
+        }
+
     </style>
     <script>
-        var svgWidth = 500, svgHeight = 500, padLeft = 20, padTop = 10;
+        var svgWidth = 640, svgHeight = 375, padLeft = 20, padTop = 10;
     </script>
 </head>
 <body onload="init()">
-    <div id="saleP0"></div>
-    <div id="saleP1"></div>
-    <div id="saleP2"></div>
-    <div id="saleP3"></div>
+    <div id="areaData">
+        <div id="saleP0"></div>
+        <div id="saleP1"></div>
+        <div id="saleP2"></div>
+        <div id="saleP3"></div>
+    </div>
     <div id="areaLine">
         <svg id="svgLine">
-            <line x1="0" y1="0" x2="0" y2="0" id="axisX"></line>
-            <line x1="0" y1="0" x2="0" y2="0" id="axisY"></line>
+            <line x1="0" y1="0" x2="0" y2="0" id="axisXLine"></line>
+            <line x1="0" y1="0" x2="0" y2="0" id="axisYLine"></line>
             <polyline points="0,0" id="poly0"></polyline>
             <polyline points="0,0" id="poly1"></polyline>
             <polyline points="0,0" id="poly2"></polyline>
@@ -65,19 +93,45 @@
 
         </svg>
     </div>
-    <div id="areaRect"></div>
-    <div id="areaCirc"></div>
+    <div id="areaRect">
+        <svg id="svgRect">
+            <line x1="0" y1="0" x2="0" y2="0" id="axisXRect"></line>
+            <line x1="0" y1="0" x2="0" y2="0" id="axisYRect"></line>
+            <rect x="0" y="0" width="0" height="0" id="rect00"></rect>
+            <rect x="0" y="0" width="0" height="0" id="rect01"></rect>
+            <rect x="0" y="0" width="0" height="0" id="rect02"></rect>
+            <rect x="0" y="0" width="0" height="0" id="rect03"></rect>
+            <rect x="0" y="0" width="0" height="0" id="rect10"></rect>
+            <rect x="0" y="0" width="0" height="0" id="rect11"></rect>
+            <rect x="0" y="0" width="0" height="0" id="rect12"></rect>
+            <rect x="0" y="0" width="0" height="0" id="rect13"></rect>
+            <rect x="0" y="0" width="0" height="0" id="rect20"></rect>
+            <rect x="0" y="0" width="0" height="0" id="rect21"></rect>
+            <rect x="0" y="0" width="0" height="0" id="rect22"></rect>
+            <rect x="0" y="0" width="0" height="0" id="rect23"></rect>
+            <rect x="0" y="0" width="0" height="0" id="rect30"></rect>
+            <rect x="0" y="0" width="0" height="0" id="rect31"></rect>
+            <rect x="0" y="0" width="0" height="0" id="rect32"></rect>
+            <rect x="0" y="0" width="0" height="0" id="rect33"></rect>
+        </svg>
+    </div>
+    <div id="areaCirc">
+        <svg id="svgCirc"></svg>
+    </div>
     <script>
 
         var domSvgLine = document.getElementById('svgLine');
         var domSvgRect = document.getElementById('svgRect');
         var domSvgCirc = document.getElementById('svgCirc');
-        var domAxisX = document.getElementById('axisX');
-        var domAxisY = document.getElementById('axisY');
+        var domAxisXLine = document.getElementById('axisXLine');
+        var domAxisYLine = document.getElementById('axisYLine');
         var poly0 = document.getElementById('poly0');
         var poly1 = document.getElementById('poly1');
         var poly2 = document.getElementById('poly2');
         var poly3 = document.getElementById('poly3');
+        var min, max;
+        var domAxisXRect = document.getElementById('axisXRect');
+        var domAxisYRect = document.getElementById('axisYRect');
 
         var saleData = [];
 
@@ -123,20 +177,8 @@
                     saleData[i][j] = parseInt(document.getElementById(`sale${i}${j}`).value);
                 }
             }
-            drawLine();
-            drawRect();
-            drawCirc();
-        }
-
-        function drawLine() {
-            domSvgLine.style.width = svgWidth;
-            domSvgLine.style.height = svgHeight * 2 / 3;
-
-            let totalWidth = svgWidth - padLeft * 2;
-            let totalHeight = svgHeight * 2 / 3 - padTop * 2;
-            let distance = totalWidth / 4 ;
-
-            let min = saleData[0][0], max = min;
+            min = saleData[0][0];
+            max = min;
             for (let seq of saleData) {
                 for (let item of seq) {
                     if (min > item) {
@@ -147,25 +189,39 @@
                     }
                 }
             }
+            drawLine();
+            drawRect();
+            drawCirc();
+        }
 
-            domAxisX.setAttribute('x1', padLeft);
-            domAxisX.setAttribute('y1', totalHeight - padTop);
-            domAxisX.setAttribute('x2', totalWidth - padLeft);
-            domAxisX.setAttribute('y2', totalHeight - padTop);
-            domAxisY.setAttribute('x1', padLeft);
-            domAxisY.setAttribute('y1', totalHeight - padTop);
-            domAxisY.setAttribute('x2', padLeft);
-            domAxisY.setAttribute('y2', padTop);
+        function drawLine() {
+            domSvgLine.style.width = svgWidth;
+            domSvgLine.style.height = svgHeight;
+
+            let totalWidth = svgWidth - padLeft * 2;
+            let totalHeight = svgHeight - padTop * 2;
+            let distance = totalWidth / 4 ;
+
+
+
+            domAxisXLine.setAttribute('x1', padLeft);
+            domAxisXLine.setAttribute('y1', totalHeight - padTop);
+            domAxisXLine.setAttribute('x2', totalWidth - padLeft);
+            domAxisXLine.setAttribute('y2', totalHeight - padTop);
+            domAxisYLine.setAttribute('x1', padLeft);
+            domAxisYLine.setAttribute('y1', totalHeight - padTop);
+            domAxisYLine.setAttribute('x2', padLeft);
+            domAxisYLine.setAttribute('y2', padTop);
 
             for (let i = 0; i < 4; i++) {
                 let str = [];
                 for (let j = 0; j < 4; j++) {
                     let ratio = (saleData[i][j] - min) / (max - min);
-                    str.push(`${padLeft * 2 + distance * j},${(totalHeight - padTop * 4) * (1 - ratio) + padTop}`);
+                    str.push(`${padLeft * 2 + distance * j},${(totalHeight - padTop * 4) * (1 - ratio) + padTop * 2}`);
                     if (j == 4 - 1) {
                         let domTxt = document.getElementById('txt' + i);
                         domTxt.setAttribute('x', padLeft * 3 + distance * j);
-                        domTxt.setAttribute('y', (totalHeight - padTop * 4) * (1 - ratio) + padTop);
+                        domTxt.setAttribute('y', (totalHeight - padTop * 4) * (1 - ratio) + padTop * 2);
                     }
                 }
                 document.getElementById('poly' + i).setAttribute('points', str.join(' '));
@@ -173,9 +229,41 @@
         }
 
         function drawRect() {
+            domSvgRect.style.width = svgWidth;
+            domSvgRect.style.height = svgHeight;
+
+            let totalWidth = svgWidth - padLeft * 2;
+            let totalHeight = svgHeight - padTop * 2;
+            let distance = totalWidth / 4;
+            let unitWidth = distance / 10;
+            domAxisXRect.setAttribute('x1', padLeft);
+            domAxisXRect.setAttribute('y1', totalHeight - padTop);
+            domAxisXRect.setAttribute('x2', totalWidth - padLeft);
+            domAxisXRect.setAttribute('y2', totalHeight - padTop);
+            domAxisYRect.setAttribute('x1', padLeft);
+            domAxisYRect.setAttribute('y1', totalHeight - padTop);
+            domAxisYRect.setAttribute('x2', padLeft);
+            domAxisYRect.setAttribute('y2', padTop);
+
+
+            totalHeight -= padTop * 4;
+
+            for (let i = 0; i < 4; i++) {
+                for (let j = 0; j < 4; j++) {
+                    let ratio = (saleData[j][i] - min) / (max - min);
+                    let dom = document.getElementById(`rect${j}${i}`);
+                    dom.setAttribute('x', padLeft * 2 + distance * i + unitWidth * j);
+                    dom.setAttribute('y', totalHeight * (1-ratio) + padTop*3 - 1);
+                    dom.setAttribute('width', unitWidth);
+                    dom.setAttribute('height', totalHeight * ratio);
+                }
+            }
+            
 
         }
         function drawCirc() {
+            domSvgCirc.style.width = svgWidth;
+            domSvgCirc.style.height = svgHeight;
 
         }
     </script>
