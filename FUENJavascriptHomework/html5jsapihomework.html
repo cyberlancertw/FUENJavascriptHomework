@@ -25,6 +25,9 @@
             text-align: center;
             float: left;
         }
+        #areaDraw{
+            float: left;
+        }
         [id^="txtName"],[id^='txtSale']{
             width: 100px;
             height: 35px;
@@ -41,37 +44,67 @@
             margin-right: 60px;
         }
         #selectPattern{
-
             margin-top: 10px;
             height: 40px;
         }
+        
         svg{
             border: 1px solid red;
-            float: right;
+            width: 800px;
+            height: 800px;
+            margin-right: auto;
+            margin-left: auto;
+        }
+
+        #axisX, #axisY {
+            stroke: black;
+            stroke-width: 2px;
+        }
+
+        polyline{
+            stroke: green;
+            stroke-width: 2px;
+            fill: none;
+        }
+        circle{
+            stroke: green;
+            fill: green;
+        }
+        text.salesName{
+            color: #5b41c8;
+            font-size: 16px;
+            background-color: #ffffff;
+        }
+        #txtWidth{
+            margin-top: 10px;
         }
     </style>
 </head>
 <body onload="init()">
-    <div id="areaSystem">
-        <h4 id="sysMessage"></h4>
-    </div>
-    <div id="areaData">
-        <span>姓名</span><span>業績(千元)</span>
-    </div>
-    <div id="areaDraw">
-        <svg id="svgDraw">
-        </svg>
-    </div>
+    <div>
+        <div id="areaSystem">
+            <h4 id="sysMessage"></h4>
+        </div>
+        <div id="areaData">
+            <span>姓名</span><span>業績(千元)</span>
+        </div>
+        <div id="areaDraw">
+            <svg id="svgDraw">
 
+            </svg>
+        </div>
+    </div>
     <script>
 
         var db;
         var domMessage = document.getElementById('sysMessage');
         var domAreaData = document.getElementById('areaData');
+        var domAreaDraw = document.getElementById('areaDraw');
         var domSvg = document.getElementById('svgDraw');
         var aryName = [];
         var arySale = [];
-
+        var svgSize = 0, padLeft = 0, padTop = 0;
+        var minData, maxData, overAll;
         function init() {
             if (indexedDB) {
                 domMessage.textContent = '您的瀏覽器支援 indexedDB。';
@@ -165,17 +198,19 @@
             domAreaData.appendChild(domSelect);
 
             let divWidth = document.createElement('div');
-            let txtWidth = document.createElement('span');
-            txtWidth.textContent = '畫布大小： ';
-            txtWidth.style.width = '30%';
-            divWidth.appendChild(txtWidth);
+            divWidth.textContent = '畫布大小：';
+            //let txtWidth = document.createElement('span');
+            //txtWidth.textContent = '畫布大小： ';
+            //txtWidth.style.width = '80px';
+            //divWidth.appendChild(txtWidth);
             let domWidth = document.createElement('input');
             domWidth.setAttribute('id', 'txtWidth');
             domWidth.setAttribute('type', 'number');
-            domWidth.setAttribute('value', 1000);
+            domWidth.setAttribute('value', 800);
             domWidth.setAttribute('max', 1000);
-            domWidth.setAttribute('min', 300);
-            domWidth.setAttribute('step', 100);
+            domWidth.setAttribute('min', 500);
+            domWidth.setAttribute('step', 50);
+            domWidth.addEventListener('change', RefreshSVG);
             divWidth.appendChild(domWidth);
             domAreaData.appendChild(divWidth);
         }
@@ -183,15 +218,21 @@
         function RefreshSVG() {
             let chartSelect = document.getElementById('selectPattern').value;
             if (chartSelect == 0) {
+                domSvg.innerHTML = '';
                 return;
             }
 
             RefreshData();
+            let windowWidth = window.innerWidth * 4 / 5;
+            svgSize = document.getElementById('txtWidth').value;
+            
+            domAreaDraw.style.width = (windowWidth - 260) + 'px';
+            domSvg.style.width = svgSize+ 'px';
+            domSvg.style.height = svgSize + 'px';
 
-            document.getElementById('areaDraw').width = window.innerWidth - 250;
-            document.getElementById('areaDraw').style.width = '500px';
-            document.getElementById('areaDraw').style.backgroundColor = '#ffff00';
-            domSvg.style.width = 1;
+            padLeft = svgSize / 10;
+            padTop = svgSize / 10;
+
             if (chartSelect == 1) {
                 DrawLineChart();
             }
@@ -200,7 +241,6 @@
             }
             else {
                 DrawPieChart();
-
             }
         }
 
@@ -211,24 +251,119 @@
                 aryName.push(document.getElementById('txtName' + i).value);
                 arySale.push(parseInt(document.getElementById('txtSale' + i).value));
             }
-            console.log(aryName);
-            console.log(arySale);
+            minData = arySale[0], maxData = arySale[0];
+            for (let sale of arySale) {                 // 求資料裡最大最小值
+                if (sale > maxData) {                   // 分布要用
+                    maxData = sale;
+                }
+                if (sale < minData) {
+                    minData = sale;
+                }
+            }
+            overAll = maxData - minData;                // 全距
+
         }
         function DrawLineChart() {
+            domSvg.innerHTML = '';
+            generateAxis();
 
+            let distance = (svgSize - padLeft * 4) / 11;
+            let totalHeight = svgSize - padTop * 4;
+            let poly = document.createElementNS('http://www.w3.org/2000/svg', 'polyline');
+            let points = [];
+            for (let i = 0; i < 12; i++) {
+                let ratio = overAll == 0 ? 0.5 : (arySale[i] - minData) / overAll;
+                let pointX = padLeft * 2 + distance * i;
+                let pointY = padTop * 2 + totalHeight * (1 - ratio);
+                points.push(`${pointX},${pointY}`);
+
+                let circ = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+                circ.setAttribute('cx', pointX);
+                circ.setAttribute('cy', pointY);
+                circ.setAttribute('r', 3);
+                domSvg.appendChild(circ);
+
+                let text = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+                text.textContent = aryName[i];
+                text.className = 'salesName';
+                let locY = 0;                               // 調整人名的 y 軸位置
+                if (i == 0) {                               // 人名最左，若往右上升，y往下移
+                    if (arySale[i] < arySale[1]) {
+                        locY = pointY + 30;
+                    }
+                    else {                                  // 人名最左，若往右下降，y往上移
+                        locY = pointY - 10;
+                    }
+                }
+                else if (i == 11) {                         // 人名最右，若往左上升，y往下移
+                    if (arySale[10] > arySale[11]) {
+                        locY = pointY + 30;
+                    }
+                    else {                                  // 人名最右，若往左下降，y往上移
+                        locY = pointY - 10;
+                    }
+                }
+                else {                                      // 人名在中間，若兩邊往上升，y往下移
+                    if (arySale[i - 1] >= arySale[i] && arySale[i] <= arySale[i + 1]) {
+                        locY = pointY + 30;
+                    }
+                    else {                                  // 其餘情形(一邊高一邊低、或往兩邊下降)，y往上移
+                        locY = pointY - 10;
+                    }
+                }
+                text.setAttribute('x', pointX - 20);
+                text.setAttribute('y', locY);
+                domSvg.appendChild(text);
+            }
+            poly.setAttribute('points', points.join(' '));      // 折線的點
+            domSvg.appendChild(poly);
+
+            let distanceY = maxData == minData ? 0 : (svgSize - padTop * 4) / (maxData - minData);
+
+            for (let i = minData - 2 ; i <= maxData + 2; i++) {
+                let ySegment = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+                let ratio = (arySale[i] - minData) / overAll;
+                ySegment.setAttribute('x1', padLeft);
+                ySegment.setAttribute('y1', padTop * 2 + distanceY * (maxData - i));
+                ySegment.setAttribute('x2', padLeft +10);
+                ySegment.setAttribute('y2', padTop * 2  + distanceY * (maxData - i ));
+                ySegment.setAttribute('stroke', 'black');
+                ySegment.setAttribute('strokeWidth', '2px');
+                domSvg.appendChild(ySegment);
+            }
         }
 
         function DrawBarChart() {
-
+            domSvg.innerHTML = '';
+            generateAxis();
         }
 
         function DrawPieChart() {
-
+            domSvg.innerHTML = '';
         }
 
 
         function UpdateData() {
 
+        }
+
+        function generateAxis() {               // Reference:  https://stackoverflow.com/questions/7547117/add-a-new-line-in-svg-bug-cannot-see-the-line
+            let axisX = document.createElementNS('http://www.w3.org/2000/svg','line');      // use document.createElementNS() namespace??
+            axisX.setAttribute('x1', padLeft);
+            axisX.setAttribute('y1', svgSize - padTop);
+            axisX.setAttribute('x2', svgSize - padLeft);
+            axisX.setAttribute('y2', svgSize - padTop);
+            axisX.setAttribute('id', 'axisX');
+            domSvg.appendChild(axisX);
+            console.log(domSvg);
+
+            let axisY = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+            axisY.setAttribute('x1', padLeft);
+            axisY.setAttribute('y1', svgSize - padTop);
+            axisY.setAttribute('x2', padLeft);
+            axisY.setAttribute('y2', padTop);
+            axisY.setAttribute('id', 'axisY');
+            domSvg.appendChild(axisY);
         }
     </script>
 </body>
