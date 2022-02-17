@@ -9,3 +9,7 @@ homework5 產生月曆
 homework6 指針時鐘
 homework7 選單滑動
 homework8 統計圖表
+
+以下是 HTML JavaScript API 作業
+
+html5jsapihomework

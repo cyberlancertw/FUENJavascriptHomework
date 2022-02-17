@@ -1,0 +1,235 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <title>HTML JS API Homework</title>
+    <link rel="stylesheet" href="css/bootstrap.min.css" />
+    <script src="js/bootstrap.bundle.min.js"></script>
+    <style>
+        body{
+            font-family: "微軟正黑體";
+            font-size: 18px;
+        }
+        [id^="area"]{
+
+        }
+        #areaSystem{
+            width: 100%;
+            background-color: burlywood;
+            padding: 2px;
+        }
+        #areaData{
+            background-color: beige;
+            width: 250px;
+            padding: 10px;
+            text-align: center;
+            float: left;
+        }
+        [id^="txtName"],[id^='txtSale']{
+            width: 100px;
+            height: 35px;
+            margin: 5px;
+            text-align: center;
+        }
+        #btnUpdate{
+            border: 1px solid gray;
+            margin-top: 10px;
+            width: 220px;
+        }
+        span:first-child{
+            margin-left: 5px;
+            margin-right: 60px;
+        }
+        #selectPattern{
+
+            margin-top: 10px;
+            height: 40px;
+        }
+        svg{
+            border: 1px solid red;
+            float: right;
+        }
+    </style>
+</head>
+<body onload="init()">
+    <div id="areaSystem">
+        <h4 id="sysMessage"></h4>
+    </div>
+    <div id="areaData">
+        <span>姓名</span><span>業績(千元)</span>
+    </div>
+    <div id="areaDraw">
+        <svg id="svgDraw">
+        </svg>
+    </div>
+
+    <script>
+
+        var db;
+        var domMessage = document.getElementById('sysMessage');
+        var domAreaData = document.getElementById('areaData');
+        var domSvg = document.getElementById('svgDraw');
+        var aryName = [];
+        var arySale = [];
+
+        function init() {
+            if (indexedDB) {
+                domMessage.textContent = '您的瀏覽器支援 indexedDB。';
+            }
+            else {
+                domMessage.textContent = '抱歉您的瀏覽器不支援 indexedDB 無法使用'
+                return;
+            }
+
+            InitializeUI();
+            InitializeDatabase();
+
+        }
+
+        function InitializeDatabase() {
+            let request = indexedDB.open('hykong20220215idbHW', 1);
+
+            request.onerror = function (event) {
+                domMessage.textContent += '資料庫開啟錯誤!';
+                return;
+            }
+
+            request.onsuccess = function (event) {
+                domMessage.textContent += "資料庫開啟順利，歡迎使用。";
+                db = request.result;
+                var index = 1
+                let objStore = db.transaction(['tSalesman'], 'readonly').objectStore('tSalesman');
+                objStore.openCursor().onsuccess = function (e) {
+                    var cursor = e.target.result;
+                    if (cursor) {
+                        document.getElementById('txtName' + index).value = cursor.value.Name;
+                        document.getElementById('txtSale' + index).value = cursor.value.Sale;
+                        index++;
+                        cursor.continue();
+                    }
+                    
+                    
+                }
+            }
+
+            request.onupgradeneeded = function (event) {
+                domMessage.textContent += "資料庫初始化完成。";
+                let initData = [
+                    { "Name": "王天生", "Sale": 65 }, { "Name": "陳秀英", "Sale": 87 }, { "Name": "許來福", "Sale": 43 },
+                    { "Name": "黃春嬌", "Sale": 72 }, { "Name": "李明", "Sale": 68 }, { "Name": "林玉蘭", "Sale": 95 },
+                    { "Name": "黃武雄", "Sale": 55 }, { "Name": "洪文雄", "Sale": 31 }, { "Name": "陳金龍", "Sale": 48 },
+                    { "Name": "吳玉英", "Sale": 70 }, { "Name": "林文雄", "Sale": 65 }, { "Name": "張美玉", "Sale": 85 }
+                ];
+                db = request.result;
+                let objStore = db.createObjectStore("tSalesman", { key: 'id', autoIncrement: true });
+                for (let data of initData) {
+                    objStore.add(data);
+                }
+            }
+
+        }
+
+        function InitializeUI() {
+            for (let i = 1; i <= 12; i++) {
+                let domDiv = document.createElement('div');
+                domDiv.setAttribute('id', 'divMan' + i);
+                let txtName = document.createElement('input');
+                txtName.setAttribute('type', 'text');
+                txtName.setAttribute('id', 'txtName' + i);
+                let txtSale = document.createElement('input');
+                txtSale.setAttribute('type', 'number');
+                txtSale.setAttribute('id', 'txtSale' + i);
+                domDiv.appendChild(txtName);
+                domDiv.appendChild(txtSale);
+
+                txtName.addEventListener('blur', RefreshSVG);
+                txtSale.addEventListener('change', RefreshSVG);
+                domAreaData.appendChild(domDiv);
+            }
+            let domBtn = document.createElement('button');
+            domBtn.setAttribute('id', 'btnUpdate');
+            domBtn.textContent = '更新至資料庫';
+            domBtn.addEventListener('click', UpdateData);
+            domAreaData.appendChild(domBtn);
+
+            let domSelect = document.createElement('select');
+            let optName = ['統計圖表','折線圖', '長條圖', '圓餅圖'];
+            for (let i in optName) {
+                let opt = document.createElement('option');
+                opt.textContent = optName[i];
+                opt.setAttribute('value', i);
+                domSelect.appendChild(opt);
+            }
+            domSelect.setAttribute('id', 'selectPattern');
+            domSelect.addEventListener('change', RefreshSVG);
+            domAreaData.appendChild(domSelect);
+
+            let divWidth = document.createElement('div');
+            let txtWidth = document.createElement('span');
+            txtWidth.textContent = '畫布大小： ';
+            txtWidth.style.width = '30%';
+            divWidth.appendChild(txtWidth);
+            let domWidth = document.createElement('input');
+            domWidth.setAttribute('id', 'txtWidth');
+            domWidth.setAttribute('type', 'number');
+            domWidth.setAttribute('value', 1000);
+            domWidth.setAttribute('max', 1000);
+            domWidth.setAttribute('min', 300);
+            domWidth.setAttribute('step', 100);
+            divWidth.appendChild(domWidth);
+            domAreaData.appendChild(divWidth);
+        }
+
+        function RefreshSVG() {
+            let chartSelect = document.getElementById('selectPattern').value;
+            if (chartSelect == 0) {
+                return;
+            }
+
+            RefreshData();
+
+            document.getElementById('areaDraw').width = window.innerWidth - 250;
+            document.getElementById('areaDraw').style.width = '500px';
+            document.getElementById('areaDraw').style.backgroundColor = '#ffff00';
+            domSvg.style.width = 1;
+            if (chartSelect == 1) {
+                DrawLineChart();
+            }
+            else if (chartSelect == 2) {
+                DrawBarChart();
+            }
+            else {
+                DrawPieChart();
+
+            }
+        }
+
+        function RefreshData() {
+            aryName = [];
+            arySale = [];
+            for (let i = 1; i <= 12; i++) {
+                aryName.push(document.getElementById('txtName' + i).value);
+                arySale.push(parseInt(document.getElementById('txtSale' + i).value));
+            }
+            console.log(aryName);
+            console.log(arySale);
+        }
+        function DrawLineChart() {
+
+        }
+
+        function DrawBarChart() {
+
+        }
+
+        function DrawPieChart() {
+
+        }
+
+
+        function UpdateData() {
+
+        }
+    </script>
+</body>
+</html>
