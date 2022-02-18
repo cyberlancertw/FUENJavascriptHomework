@@ -100,26 +100,36 @@
         var domAreaData = document.getElementById('areaData');
         var domAreaDraw = document.getElementById('areaDraw');
         var domSvg = document.getElementById('svgDraw');
+
+        //var dataCount = 0;
+        var dataCount = 12;
+
         var aryName = [];
         var arySale = [];
         var aryColor = ['wheat', 'violet', 'aqua', 'blanchedalmond', 'khaki', 'cyan', 'mistyrose', 'cornsilk', 'turquoise', 'peachpuff', 'lightblue', 'burlywood'];
         var svgSize = 0, padLeft = 0, padTop = 0;
         var minData, maxData, overAll;
+
         function init() {
+
             if (indexedDB) {
                 domMessage.textContent = '您的瀏覽器支援 indexedDB。';
+
             }
             else {
                 domMessage.textContent = '抱歉您的瀏覽器不支援 indexedDB 無法使用'
-                return;
             }
 
-            InitializeUI();
             InitializeDatabase();
-
+            InitializeUI();
         }
+        
+        
 
         function InitializeDatabase() {
+            aryName = [];
+            arySale = [];
+            console.log(dataCount);
             let request = indexedDB.open('hykong20220215idbHW', 1);
 
             request.onerror = function (event) {
@@ -129,21 +139,23 @@
             request.onsuccess = function (event) {
                 domMessage.textContent += "資料庫開啟順利，歡迎使用。";
                 db = request.result;
-                var index = 1
+                dataCount = 0;
                 let objStore = db.transaction(['tSalesman'], 'readonly').objectStore('tSalesman');
                 objStore.openCursor().onsuccess = function (e) {
                     var cursor = e.target.result;
                     if (cursor) {
-                        document.getElementById('txtName' + index).value = cursor.value.Name;
-                        document.getElementById('txtSale' + index).value = cursor.value.Sale;
-                        index++;
+
+                        aryName.push(cursor.value.Name);
+                        arySale.push(cursor.value.Sale);
+
+                        dataCount++;
+                        console.log(dataCount);
+
                         cursor.continue();
                     }
-                    
-                    
                 }
             }
-
+            console.log(dataCount);
             request.onupgradeneeded = function (event) {
                 domMessage.textContent += "資料庫初始化完成。";
                 let initData = [
@@ -158,24 +170,34 @@
                     objStore.add(data);
                 }
             }
-
         }
 
         function InitializeUI() {
-            for (let i = 1; i <= 12; i++) {
+            console.log(dataCount);
+            for (let i = 0; i < dataCount; i++) {
                 let domDiv = document.createElement('div');
                 domDiv.setAttribute('id', 'divMan' + i);
                 let txtName = document.createElement('input');
+                txtName.textContent = aryName[i];
                 txtName.setAttribute('type', 'text');
                 txtName.setAttribute('id', 'txtName' + i);
                 let txtSale = document.createElement('input');
+                txtSale.textContent = arySale[i];
                 txtSale.setAttribute('type', 'number');
                 txtSale.setAttribute('id', 'txtSale' + i);
                 domDiv.appendChild(txtName);
                 domDiv.appendChild(txtSale);
 
-                txtName.addEventListener('blur', RefreshSVG);
-                txtSale.addEventListener('change', RefreshSVG);
+                txtName.addEventListener('blur', function () {
+                    aryName[i] = this.value;
+                    RefreshSVG();
+                });
+                txtSale.addEventListener('change', function () {
+                    arySale[i] = this.value;
+                    RefreshSVG();
+                });
+
+                    //RefreshSVG);
                 domAreaData.appendChild(domDiv);
             }
             let domBtn = document.createElement('button');
@@ -218,10 +240,10 @@
             }
 
             RefreshData();
-            let windowWidth = window.innerWidth * 4 / 5;
+            let windowWidth = window.innerWidth * 4 / 5;                // 不知道為何抓到都會超過，只好縮小一點
             svgSize = document.getElementById('txtWidth').value;
             
-            domAreaDraw.style.width = (windowWidth - 260) + 'px';
+            domAreaDraw.style.width = (windowWidth - 260) + 'px';       // 砍掉左邊的寬度
             domSvg.style.width = svgSize+ 'px';
             domSvg.style.height = svgSize + 'px';
 
@@ -240,12 +262,16 @@
         }
 
         function RefreshData() {
-            aryName = [];
-            arySale = [];
-            for (let i = 1; i <= 12; i++) {
-                aryName.push(document.getElementById('txtName' + i).value);
-                arySale.push(parseInt(document.getElementById('txtSale' + i).value));
-            }
+            //aryName = [];
+            //arySale = [];
+            //for (let i = 0; i < 12; i++) {
+            //    aryName.push(document.getElementById('txtName' + i).value);
+            //    arySale.push(parseInt(document.getElementById('txtSale' + i).value));
+            //}
+            //for (let i = 0; i < dataCount; i++) {
+            //    document.getElementById('txtName' + i).value = aryName[i];
+            //    document.getElementById('txtSale' + i).value = arySale[i];
+            //}
             minData = arySale[0], maxData = arySale[0];
             for (let sale of arySale) {                 // 求資料裡最大最小值
                 if (sale > maxData) {                   // 分布要用
@@ -262,11 +288,11 @@
             domSvg.innerHTML = '';
             generateAxis();
 
-            let distance = (svgSize - padLeft * 4) / 11;
+            let distance = (svgSize - padLeft * 4) / (dataCount - 1);
             let totalHeight = svgSize - padTop * 4;
             let poly = document.createElementNS('http://www.w3.org/2000/svg', 'polyline');
             let points = [];
-            for (let i = 0; i < 12; i++) {
+            for (let i = 0; i < dataCount; i++) {
                 let ratio = overAll == 0 ? 0.5 : (arySale[i] - minData) / overAll;
                 let pointX = padLeft * 2 + distance * i;
                 let pointY = padTop * 2 + totalHeight * (1 - ratio);
@@ -308,15 +334,15 @@
                 let locX = pointX - 30;                     // 調整人名位置稍微置中
                 let locY = pointY;                          // 調整人名的 y 軸位置，靠以下判斷
                 if (i == 0) {                               // 人名最左，若往右上升，y往下移
-                    if (arySale[i] < arySale[1]) {
+                    if (arySale[i] < arySale[i+1]) {
                         locY += 30;
                     }
                     else {                                  // 人名最左，若往右下降，y往上移
                         locY -= 10;
                     }
                 }
-                else if (i == 11) {                         // 人名最右，若往左上升，y往下移
-                    if (arySale[10] > arySale[11]) {
+                else if (i == dataCount - 1) {                         // 人名最右，若往左上升，y往下移
+                    if (arySale[i-1] > arySale[i]) {
                         locY += 30;
                     }
                     else {                                  // 人名最右，若往左下降，y往上移
@@ -366,11 +392,11 @@
             domSvg.innerHTML = '';
             
 
-            let distance = (svgSize - padLeft * 4) / 11;
+            let distance = (svgSize - padLeft * 4) / (dataCount - 1);
             let barWidth = svgSize / 25;
             let totalHeight = svgSize - padTop * 4;
 
-            for (let i = 0; i < 12; i++) {
+            for (let i = 0; i < dataCount; i++) {
                 let ratio = overAll == 0 ? 0.5 : (arySale[i] - minData) / overAll;
                 let pointX = padLeft * 2 + distance * i;
                 let pointY = padTop * 2 + totalHeight * (1 - ratio);
@@ -380,7 +406,7 @@
                 rect.setAttribute('x', pointX - barWidth / 2);
                 rect.setAttribute('y', pointY);
                 rect.setAttribute('width', barWidth);
-                rect.setAttribute('height', svgSize - pointY - padTop );             // 再減2是因為觸底會蓋掉x軸...
+                rect.setAttribute('height', svgSize - pointY - padTop );
                 rect.setAttribute('stroke', aryColor[i]);
                 rect.setAttribute('fill', aryColor[i]);
                 rect.addEventListener('mouseover', function () {            // 移到字上變粗體
@@ -411,8 +437,8 @@
                 text.setAttribute('id', 'text' + (i + 1));
                 text.textContent = aryName[i];
                 text.className = 'salesName';
-                let locX = pointX - 28;                                     // 調整人名位置稍微置中
-                let locY = i % 2 == 0 ? svgSize - padTop * 2/3 : svgSize - padTop / 4;   // 調整人名的 y 軸位置稍微往上
+                let locX = pointX - 28;                                                  // 調整人名位置稍微置中
+                let locY = i % 2 == 0 ? svgSize - padTop * 2/3 : svgSize - padTop / 4;   // 調整人名的 y 軸位置稍微往上，交錯上下排
                 text.setAttribute('x', locX); 
                 text.setAttribute('y', locY);
                 text.addEventListener('mouseover', function () {            // 移到字上變粗體
