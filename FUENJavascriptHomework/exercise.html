@@ -1,0 +1,44 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <title>測試觀察用</title>
+    <link rel="stylesheet" href="css/bootstrap.min.css" />
+    <script src="js/bootstrap.bundle.min.js"></script>
+    <style>
+        
+        svg{
+            border: 1px solid black;
+        }
+        path{
+            stroke: black;
+            stroke-width: 1px;
+            fill: lightgreen;
+        }
+        circle{
+            stroke: black;
+            stroke-width: 2px;
+            fill: none;
+        }
+    </style>
+</head>
+<body>
+    <svg width="500" height="500">
+        <path d="m 100 100 L 200 200  l 50 30 z"></path>
+        <path id="tt" d="0"></path>
+        <circle cx="300" cy="300" r="2"></circle>
+    </svg>
+    <script>
+        /*  A rx ry x-axis-rotation large-arc-flag sweep-flag x y
+ a rx ry x-axis-rotation large-arc-flag sweep-flag dx dy */
+        str = 'M 300 300';
+        spx = 80 * Math.cos(30 * Math.PI / 180);
+        spy = 80 * Math.sin(30 * Math.PI / 180);
+        str += `l ${spx} ${spy}`;
+        spx = 300 + 80 * Math.cos(75 * Math.PI / 180);
+        spy = 300 + 80 * Math.sin(75 * Math.PI / 180);
+        str += `A 80 80 0 0 1 ${spx} ${spy}`;
+        document.getElementById('tt').setAttribute('d', str);
+    </script>
+</body>
+</html>

@@ -101,14 +101,14 @@
         var domAreaDraw = document.getElementById('areaDraw');
         var domSvg = document.getElementById('svgDraw');
 
-        //var dataCount = 0;
-        var dataCount = 12;
+        var dataCount = 0;
+        //var dataCount = 12;
 
         var aryName = [];
         var arySale = [];
         var aryColor = ['wheat', 'violet', 'aqua', 'blanchedalmond', 'khaki', 'cyan', 'mistyrose', 'cornsilk', 'turquoise', 'peachpuff', 'lightblue', 'burlywood'];
         var svgSize = 0, padLeft = 0, padTop = 0;
-        var minData, maxData, overAll;
+        var minData, maxData, overAll, sumSale, sumRadian, previousPx, previousPy;
 
         function init() {
 
@@ -121,7 +121,7 @@
             }
 
             InitializeDatabase();
-            InitializeUI();
+            setTimeout(InitializeUI, 500);      // 因為 IndexedDB 的 cursor 非同步，所以強迫 InitializeUI 晚點建 (晚半秒)
         }
         
         
@@ -129,7 +129,6 @@
         function InitializeDatabase() {
             aryName = [];
             arySale = [];
-            console.log(dataCount);
             let request = indexedDB.open('hykong20220215idbHW', 1);
 
             request.onerror = function (event) {
@@ -149,23 +148,22 @@
                         arySale.push(cursor.value.Sale);
 
                         dataCount++;
-                        console.log(dataCount);
 
                         cursor.continue();
                     }
                 }
             }
-            console.log(dataCount);
+
             request.onupgradeneeded = function (event) {
                 domMessage.textContent += "資料庫初始化完成。";
                 let initData = [
                     { "Name": "王天生", "Sale": 65 }, { "Name": "陳秀英", "Sale": 87 }, { "Name": "許來福", "Sale": 43 },
                     { "Name": "黃春嬌", "Sale": 72 }, { "Name": "李明", "Sale": 68 }, { "Name": "林玉蘭", "Sale": 95 },
                     { "Name": "黃武雄", "Sale": 55 }, { "Name": "洪文雄", "Sale": 31 }, { "Name": "陳金龍", "Sale": 48 },
-                    { "Name": "吳玉英", "Sale": 70 }, { "Name": "林文雄", "Sale": 65 }, { "Name": "張美玉", "Sale": 85 }
+                    { "Name": "吳玉英", "Sale": 70 }, { "Name": "謝文雄", "Sale": 65 }, { "Name": "張美玉", "Sale": 85 }
                 ];
                 db = request.result;
-                let objStore = db.createObjectStore("tSalesman", { key: 'id', autoIncrement: true });
+                let objStore = db.createObjectStore("tSalesman", { key: 'id', autoIncrement: true });       // 建資料表，以id為primary key 並自動遞增
                 for (let data of initData) {
                     objStore.add(data);
                 }
@@ -174,30 +172,31 @@
 
         function InitializeUI() {
             console.log(dataCount);
+
             for (let i = 0; i < dataCount; i++) {
                 let domDiv = document.createElement('div');
                 domDiv.setAttribute('id', 'divMan' + i);
                 let txtName = document.createElement('input');
-                txtName.textContent = aryName[i];
+                txtName.setAttribute('value', aryName[i]);
                 txtName.setAttribute('type', 'text');
                 txtName.setAttribute('id', 'txtName' + i);
                 let txtSale = document.createElement('input');
-                txtSale.textContent = arySale[i];
+                txtSale.setAttribute('value', arySale[i]);
                 txtSale.setAttribute('type', 'number');
                 txtSale.setAttribute('id', 'txtSale' + i);
-                domDiv.appendChild(txtName);
-                domDiv.appendChild(txtSale);
 
-                txtName.addEventListener('blur', function () {
-                    aryName[i] = this.value;
+
+                txtName.addEventListener('change', function () {
+                    aryName[i] = this.value;                            // 改完銷售員姓名，存入資料，重畫圖
                     RefreshSVG();
                 });
                 txtSale.addEventListener('change', function () {
-                    arySale[i] = this.value;
+                    arySale[i] = parseInt(this.value);                  // 改完業績，存入資料(要轉型不然會出事，血淚教訓)，重畫圖
                     RefreshSVG();
                 });
 
-                    //RefreshSVG);
+                domDiv.appendChild(txtName);
+                domDiv.appendChild(txtSale);
                 domAreaData.appendChild(domDiv);
             }
             let domBtn = document.createElement('button');
@@ -207,7 +206,7 @@
             domAreaData.appendChild(domBtn);
 
             let domSelect = document.createElement('select');
-            let optName = ['統計圖表','折線圖', '長條圖', '圓餅圖'];
+            let optName = ['統計圖表','折線圖', '長條圖', '圓餅圖','第三方神奇圖圖'];
             for (let i in optName) {
                 let opt = document.createElement('option');
                 opt.textContent = optName[i];
@@ -234,12 +233,12 @@
 
         function RefreshSVG() {
             let chartSelect = document.getElementById('selectPattern').value;
-            if (chartSelect == 0) {
-                domSvg.innerHTML = '';
+            if (chartSelect == 0) {                                     // 選到提示，清掉統計圖，然後什麼都不做
+                domSvg.innerHTML = '';  
                 return;
             }
-
             RefreshData();
+
             let windowWidth = window.innerWidth * 4 / 5;                // 不知道為何抓到都會超過，只好縮小一點
             svgSize = document.getElementById('txtWidth').value;
             
@@ -253,82 +252,61 @@
             if (chartSelect == 1) {
                 DrawLineChart();
             }
-            else if (chartSelect == 2) {
+            else if (chartSelect == 2)
+            {
                 DrawBarChart();
+
+
+
             }
-            else {
+            else
+            {
+
+
                 DrawPieChart();
             }
         }
 
         function RefreshData() {
-            //aryName = [];
-            //arySale = [];
-            //for (let i = 0; i < 12; i++) {
-            //    aryName.push(document.getElementById('txtName' + i).value);
-            //    arySale.push(parseInt(document.getElementById('txtSale' + i).value));
-            //}
-            //for (let i = 0; i < dataCount; i++) {
-            //    document.getElementById('txtName' + i).value = aryName[i];
-            //    document.getElementById('txtSale' + i).value = arySale[i];
-            //}
+
+            sumSale = 0;
             minData = arySale[0], maxData = arySale[0];
-            for (let sale of arySale) {                 // 求資料裡最大最小值
-                if (sale > maxData) {                   // 分布要用
-                    maxData = sale;
+            for (let sale of arySale) {                 // 求資料裡極值，分布要用
+                sumSale += sale; 
+                if (sale > maxData) {                   
+                    maxData = sale;                     // 求最大值
                 }
                 if (sale < minData) {
-                    minData = sale;
+                    minData = sale;                     // 求最小值
                 }
             }
             overAll = maxData - minData;                // 全距
-
         }
         function DrawLineChart() {
-            domSvg.innerHTML = '';
-            generateAxis();
+            domSvg.innerHTML = '';                      // 清空
+            generateAxis();                             // 畫兩軸
 
             let distance = (svgSize - padLeft * 4) / (dataCount - 1);
             let totalHeight = svgSize - padTop * 4;
             let poly = document.createElementNS('http://www.w3.org/2000/svg', 'polyline');
             let points = [];
             for (let i = 0; i < dataCount; i++) {
-                let ratio = overAll == 0 ? 0.5 : (arySale[i] - minData) / overAll;
+                let ratio = overAll == 0 ? 0.5 : (arySale[i] - minData) / overAll;          // 當所有值都相同時，資料擺中間
                 let pointX = padLeft * 2 + distance * i;
                 let pointY = padTop * 2 + totalHeight * (1 - ratio);
                 points.push(`${pointX},${pointY}`);
 
                 let circ = document.createElementNS('http://www.w3.org/2000/svg', 'circle');        // 畫節點
-                circ.setAttribute('id', 'circ' + (i+1));
+                circ.setAttribute('id', 'circ' + i);
                 circ.setAttribute('cx', pointX);
                 circ.setAttribute('cy', pointY);
                 circ.setAttribute('r', 3);
-                circ.addEventListener('mouseover', function () {            // 滑鼠移上去點點變大，名字加粗，多了業績
-                    this.style.r = 6;
-
-                    document.getElementById('text' + (i + 1)).style.fontWeight = 'bold';
-                    document.getElementById('text' + (i + 1)).textContent = `${aryName[i]} ${arySale[i]}`;
-                    let hoverLine = document.createElementNS('http://www.w3.org/2000/svg', 'line');         // 加一條水平虛線
-                    hoverLine.setAttribute('id', 'hoverLine');
-                    hoverLine.setAttribute('stroke', 'gray');
-                    hoverLine.setAttribute('stroke-width', 1);
-                    hoverLine.setAttribute('stroke-dasharray', '5,5');
-                    hoverLine.setAttribute('x1', pointX);
-                    hoverLine.setAttribute('y1', pointY);
-                    hoverLine.setAttribute('x2', padLeft);
-                    hoverLine.setAttribute('y2', pointY);
-                    domSvg.appendChild(hoverLine);
-                });
-                circ.addEventListener('mouseout', function () {             // 滑鼠移開，一切還原
-                    this.style.r = 3;
-                    document.getElementById('text' + (i + 1)).style.fontWeight = 'normal';
-                    document.getElementById('text' + (i + 1)).textContent = aryName[i];
-                    document.getElementById('hoverLine').remove();
-                })
+                circ.addEventListener('mouseover', m => lineMouseOver(i, pointX, pointY));
+                circ.addEventListener('mouseout', m => lineMouseOut(i));
                 domSvg.appendChild(circ);
 
                 let text = document.createElementNS('http://www.w3.org/2000/svg', 'text');
-                text.setAttribute('id', 'text' + (i + 1));
+                text.setAttribute('id', 'text' + i);
                 text.textContent = aryName[i];
                 text.className = 'salesName';
                 let locX = pointX - 30;                     // 調整人名位置稍微置中
@@ -341,7 +319,7 @@
                         locY -= 10;
                     }
                 }
-                else if (i == dataCount - 1) {                         // 人名最右，若往左上升，y往下移
+                else if (i == dataCount - 1) {              // 人名最右，若往左上升，y往下移
                     if (arySale[i-1] > arySale[i]) {
                         locY += 30;
                     }
@@ -359,35 +337,39 @@
                 }
                 text.setAttribute('x', locX);
                 text.setAttribute('y', locY);
-                text.addEventListener('mouseover', function () {            // 移到字上變粗體，點點變大顆
-                    this.style.fontWeight = 'bold';
-                    this.textContent = `${aryName[i]} ${arySale[i]}`;
-                    document.getElementById('circ' + (i + 1)).style.r = 6;
-                    let hoverLine = document.createElementNS('http://www.w3.org/2000/svg', 'line');     // 加水平虛線
-                    hoverLine.setAttribute('id', 'hoverLine');
-                    hoverLine.setAttribute('stroke', 'gray');
-                    hoverLine.setAttribute('stroke-width', 1);
-                    hoverLine.setAttribute('stroke-dasharray', '5,5');
-                    hoverLine.setAttribute('x1', pointX);
-                    hoverLine.setAttribute('y1', pointY);
-                    hoverLine.setAttribute('x2', padLeft);
-                    hoverLine.setAttribute('y2', pointY);
-                    domSvg.appendChild(hoverLine);
-                });
-                text.addEventListener('mouseout', function () {             // 滑鼠移開恢復
-                    this.style.fontWeight = 'normal';
-                    this.textContent = aryName[i];
-                    document.getElementById('circ' + (i + 1)).style.r = 3;
-                    document.getElementById('hoverLine').remove();
-                });
+                text.addEventListener('mouseover', m => lineMouseOver(i, pointX, pointY));
+                text.addEventListener('mouseout', m => lineMouseOut(i));
+
                 domSvg.appendChild(text);
             }
             poly.setAttribute('points', points.join(' '));      // 折線的點
             domSvg.appendChild(poly);
-
-            
         }
 
+        function lineMouseOver(i, pointX, pointY) {
+            let text = document.getElementById('text' + i);
+            text.style.fontWeight = 'bold';
+            text.textContent = `${aryName[i]} ${arySale[i]}`;
+            document.getElementById('circ' + i).style.r = 6;
+            let hoverLine = document.createElementNS('http://www.w3.org/2000/svg', 'line');     // 加水平虛線
+            hoverLine.setAttribute('id', 'hoverLine');
+            hoverLine.setAttribute('stroke', 'gray');
+            hoverLine.setAttribute('stroke-width', 1);
+            hoverLine.setAttribute('stroke-dasharray', '5,5');
+            hoverLine.setAttribute('x1', pointX);
+            hoverLine.setAttribute('y1', pointY);
+            hoverLine.setAttribute('x2', padLeft);
+            hoverLine.setAttribute('y2', pointY);
+            domSvg.appendChild(hoverLine);
+        }
+
+        function lineMouseOut(i) {
+            let text = document.getElementById('text' + i);
+            text.style.fontWeight = 'normal';
+            text.textContent = aryName[i];
+            document.getElementById('circ' + i).style.r = 3;
+            document.getElementById('hoverLine').remove();
+        }
         function DrawBarChart() {
             domSvg.innerHTML = '';
             
@@ -409,56 +391,22 @@
                 rect.setAttribute('height', svgSize - pointY - padTop );
                 rect.setAttribute('stroke', aryColor[i]);
                 rect.setAttribute('fill', aryColor[i]);
-                rect.addEventListener('mouseover', function () {            // 移到字上變粗體
-                    this.setAttribute('stroke', 'black');                   // 長方條加框
-                    document.getElementById('text' + (i + 1)).style.fontWeight = 'bold';
+                
+                rect.addEventListener('mouseover', m => barMouseOver(i, pointX, pointY));
+                rect.addEventListener('mouseout', m => barMouseOut(i));
 
-                    let hoverLine = document.createElementNS('http://www.w3.org/2000/svg', 'line');     // 加水平虛線
-                    hoverLine.setAttribute('id', 'hoverLine');
-                    hoverLine.setAttribute('stroke', 'gray');
-                    hoverLine.setAttribute('stroke-width', 1);
-                    hoverLine.setAttribute('stroke-dasharray', '5,5');
-                    hoverLine.setAttribute('x1', pointX);
-                    hoverLine.setAttribute('y1', pointY);
-                    hoverLine.setAttribute('x2', padLeft);
-                    hoverLine.setAttribute('y2', pointY);
-                    domSvg.appendChild(hoverLine);
-                });
-                rect.addEventListener('mouseout', function () {             // 滑鼠移開恢復
-                    this.setAttribute('stroke', aryColor[i]);
-                    document.getElementById('text' + (i + 1)).style.fontWeight = 'normal';
-                    document.getElementById('hoverLine').remove();
-                });
                 domSvg.appendChild(rect);
 
-
-
                 let text = document.createElementNS('http://www.w3.org/2000/svg', 'text');
-                text.setAttribute('id', 'text' + (i + 1));
+                text.setAttribute('id', 'text' + i);
                 text.textContent = aryName[i];
                 text.className = 'salesName';
                 let locX = pointX - 28;                                                  // 調整人名位置稍微置中
                 let locY = i % 2 == 0 ? svgSize - padTop * 2/3 : svgSize - padTop / 4;   // 調整人名的 y 軸位置稍微往上，交錯上下排
                 text.setAttribute('x', locX); 
                 text.setAttribute('y', locY);
-                text.addEventListener('mouseover', function () {            // 移到字上變粗體
-                    this.style.fontWeight = 'bold';
-
-                    let hoverLine = document.createElementNS('http://www.w3.org/2000/svg', 'line');     // 加水平虛線
-                    hoverLine.setAttribute('id', 'hoverLine');
-                    hoverLine.setAttribute('stroke', 'gray');
-                    hoverLine.setAttribute('stroke-width', 1);
-                    hoverLine.setAttribute('stroke-dasharray', '5,5');
-                    hoverLine.setAttribute('x1', pointX);
-                    hoverLine.setAttribute('y1', pointY);
-                    hoverLine.setAttribute('x2', padLeft);
-                    hoverLine.setAttribute('y2', pointY);
-                    domSvg.appendChild(hoverLine);
-                });
-                text.addEventListener('mouseout', function () {             // 滑鼠移開恢復
-                    this.style.fontWeight = 'normal';
-                    document.getElementById('hoverLine').remove();
-                });
+                text.addEventListener('mouseover', m => barMouseOver(i, pointX, pointY));
+                text.addEventListener('mouseout', m => barMouseOut(i));
                 domSvg.appendChild(text);
             }
             generateAxis();
@@ -466,13 +414,79 @@
 
         function DrawPieChart() {
             domSvg.innerHTML = '';
+
+            sumRadian = 0;
+            let cx = svgSize / 2;
+            let cy = cx;
+            let r = svgSize / 3;
+            previousPx = cx + r;
+            previousPy = cy;
+
+            for (let i = 0; i < dataCount; i++) {
+                let ratio = arySale[i] / sumSale;
+                let largeArc = ratio > 0.5 ? 1 : 0;     // 畫優弧or劣弧
+                let theta = ratio * 2 * Math.PI;
+                sumRadian += theta;
+                let nextPx = cx + r * Math.cos(sumRadian);
+                let nextPy = cy + r * Math.sin(sumRadian);
+                let fan = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+                fan.setAttribute('id', 'fan' + i);
+                fan.setAttribute('stroke', 'white');
+                fan.setAttribute('stroke-width', 2);
+                fan.setAttribute('fill', aryColor[i]);
+                fan.setAttribute('d', `M ${cx} ${cy} L ${previousPx} ${previousPy} A ${r} ${r} 0 ${largeArc} 1 ${nextPx} ${nextPy} Z`);
+
+                let text = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+                text.textContent = aryName[i];
+                text.setAttribute('id', 'text' + i);
+                text.setAttribute('color', 'black');
+                text.setAttribute('font-size', 20);
+                text.setAttribute('x')
+                previousPx = nextPx;
+                previousPy = nextPy;
+                domSvg.appendChild(fan);
+            }
+            console.log(domSvg);
         }
 
 
         function UpdateData() {
+            //  寫進資料庫
 
         }
 
+        function barMouseOver(i, pointX, pointY) {
+            document.getElementById('rect' + i).setAttribute('stroke', 'black');                // 長方條加框
+            document.getElementById('rect' + i).style.stroke = 'black';
+            document.getElementById('text' + i).style.fontWeight = 'bold';                      // 姓名加粗
+
+            let hoverLine = document.createElementNS('http://www.w3.org/2000/svg', 'line');     // 加水平虛線
+            hoverLine.setAttribute('id', 'hoverLine');
+            hoverLine.setAttribute('stroke', 'gray');
+            hoverLine.setAttribute('stroke-width', 1);
+            hoverLine.setAttribute('stroke-dasharray', '5,5');
+            hoverLine.setAttribute('x1', pointX);
+            hoverLine.setAttribute('y1', pointY);
+            hoverLine.setAttribute('x2', padLeft);
+            hoverLine.setAttribute('y2', pointY);
+            domSvg.appendChild(hoverLine);
+
+            let hoverText = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+            hoverText.textContent = arySale[i];
+            hoverText.setAttribute('id', 'hoverText');
+            hoverText.setAttribute('x', pointX - 12);
+            hoverText.setAttribute('y', pointY - 6);
+            hoverText.setAttribute('fontSize', 18);
+            hoverText.setAttribute('fontWeight', 'bold');
+            domSvg.appendChild(hoverText);
+
+        }
+        function barMouseOut(i) {             // 滑鼠移開恢復
+            document.getElementById('text' + i).style.fontWeight = 'normal';
+            document.getElementById('rect' + i).style.stroke = aryColor[i];
+            document.getElementById('hoverLine').remove();
+            document.getElementById('hoverText').remove();
+        }
         function generateAxis() {               // Reference:  https://stackoverflow.com/questions/7547117/add-a-new-line-in-svg-bug-cannot-see-the-line
             let axisX = document.createElementNS('http://www.w3.org/2000/svg','line');      // use document.createElementNS() namespace??
             axisX.setAttribute('x1', padLeft);
