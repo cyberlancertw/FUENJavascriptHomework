@@ -429,6 +429,9 @@
                 let ratio = arySale[i] / sumSale;
                 let largeArc = ratio > 0.5 ? 1 : 0;     // 畫優弧or劣弧
                 let theta = ratio * 2 * Math.PI;
+
+                let textRadian = sumRadian + theta / 2;         // 文字定位用
+
                 sumRadian += theta;
                 let nextPx = cx + r * Math.cos(sumRadian);
                 let nextPy = cy + r * Math.sin(sumRadian);
@@ -445,14 +448,16 @@
                 text.setAttribute('color', 'black');
                 text.setAttribute('font-size', 20);
 
-                //text.setAttribute('x') here
-
-
+                let textX = cx + (r * 1.2) * Math.cos(textRadian);
+                let textY = cy + (r * 1.2) * Math.sin(textRadian);
+                text.setAttribute('x', textX - 25);
+                text.setAttribute('y', textY);
+                domSvg.appendChild(text);
                 previousPx = nextPx;
                 previousPy = nextPy;
                 domSvg.appendChild(fan);
             }
-            console.log(domSvg);
+
         }
 
 
@@ -501,7 +506,6 @@
             axisX.setAttribute('y2', svgSize - padTop);
             axisX.setAttribute('id', 'axisX');
             domSvg.appendChild(axisX);
-            console.log(domSvg);
 
             let axisY = document.createElementNS('http://www.w3.org/2000/svg', 'line');
             axisY.setAttribute('x1', padLeft);
