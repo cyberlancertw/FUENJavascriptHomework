@@ -121,7 +121,7 @@
             }
 
             InitializeDatabase();
-            setTimeout(InitializeUI, 500);      // 因為 IndexedDB 的 cursor 非同步，所以強迫 InitializeUI 晚點建 (晚半秒)
+            //setTimeout(InitializeUI, 500);      // 因為 IndexedDB 的 cursor 非同步，所以強迫 InitializeUI 晚點建 (晚半秒)
         }
         
         
@@ -150,6 +150,9 @@
                         dataCount++;
 
                         cursor.continue();
+                    }
+                    else {
+                        InitializeUI();
                     }
                 }
             }
@@ -441,7 +444,10 @@
                 text.setAttribute('id', 'text' + i);
                 text.setAttribute('color', 'black');
                 text.setAttribute('font-size', 20);
-                text.setAttribute('x')
+
+                //text.setAttribute('x') here
+
+
                 previousPx = nextPx;
                 previousPy = nextPy;
                 domSvg.appendChild(fan);
