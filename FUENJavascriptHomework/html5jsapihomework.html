@@ -235,7 +235,7 @@
         }
 
         function RefreshSVG() {
-            let chartSelect = document.getElementById('selectPattern').value;
+            let chartSelect = parseInt(document.getElementById('selectPattern').value);
             if (chartSelect == 0) {                                     // 選到提示，清掉統計圖，然後什麼都不做
                 domSvg.innerHTML = '';  
                 return;
@@ -252,22 +252,26 @@
             padLeft = svgSize / 10;
             padTop = svgSize / 10;
 
-            if (chartSelect == 1) {
-                DrawLineChart();
+            switch (chartSelect) {
+                case 1: DrawLineChart(); return;
+                case 2: DrawBarChart(); return;
+                case 3: DrawPieChart(); return;
+                case 4:
+                default: break;
             }
-            else if (chartSelect == 2)
-            {
-                DrawBarChart();
+            //if (chartSelect == 1) {
+            //    DrawLineChart();
+            //}
+            //else if (chartSelect == 2)
+            //{
+            //    DrawBarChart();
 
+            //}
+            //else
+            //{
 
-
-            }
-            else
-            {
-
-
-                DrawPieChart();
-            }
+            //    DrawPieChart();
+            //}
         }
 
         function RefreshData() {
@@ -349,7 +353,7 @@
             domSvg.appendChild(poly);
         }
 
-        function lineMouseOver(i, pointX, pointY) {
+        function lineMouseOver(i, pointX, pointY) {             // 折線圖，滑鼠指向某人姓名或折線圖上的圓點
             let text = document.getElementById('text' + i);
             text.style.fontWeight = 'bold';
             text.textContent = `${aryName[i]} ${arySale[i]}`;
@@ -366,7 +370,7 @@
             domSvg.appendChild(hoverLine);
         }
 
-        function lineMouseOut(i) {
+        function lineMouseOut(i) {                              // 折線圖，滑鼠離開
             let text = document.getElementById('text' + i);
             text.style.fontWeight = 'normal';
             text.textContent = aryName[i];
@@ -415,6 +419,39 @@
             generateAxis();
         }
 
+        function barMouseOver(i, pointX, pointY) {              // 長條圖，滑鼠移向某人姓名或長方形
+            document.getElementById('rect' + i).setAttribute('stroke', 'black');                // 長方條加框
+            document.getElementById('rect' + i).style.stroke = 'black';
+            document.getElementById('text' + i).style.fontWeight = 'bold';                      // 姓名加粗
+
+            let hoverLine = document.createElementNS('http://www.w3.org/2000/svg', 'line');     // 加水平虛線
+            hoverLine.setAttribute('id', 'hoverLine');
+            hoverLine.setAttribute('stroke', 'gray');
+            hoverLine.setAttribute('stroke-width', 1);
+            hoverLine.setAttribute('stroke-dasharray', '5,5');
+            hoverLine.setAttribute('x1', pointX);
+            hoverLine.setAttribute('y1', pointY);
+            hoverLine.setAttribute('x2', padLeft);
+            hoverLine.setAttribute('y2', pointY);
+            domSvg.appendChild(hoverLine);
+
+            let hoverText = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+            hoverText.textContent = arySale[i];
+            hoverText.setAttribute('id', 'hoverText');
+            hoverText.setAttribute('x', pointX - 12);
+            hoverText.setAttribute('y', pointY - 6);
+            hoverText.setAttribute('fontSize', 18);
+            hoverText.setAttribute('fontWeight', 'bold');
+            domSvg.appendChild(hoverText);
+
+        }
+        function barMouseOut(i) {             // 滑鼠移開恢復
+            document.getElementById('text' + i).style.fontWeight = 'normal';
+            document.getElementById('rect' + i).style.stroke = aryColor[i];
+            document.getElementById('hoverLine').remove();
+            document.getElementById('hoverText').remove();
+        }
+
         function DrawPieChart() {
             domSvg.innerHTML = '';
 
@@ -451,7 +488,7 @@
                 let textX = cx + (r * 1.2) * Math.cos(textRadian);
                 let textY = cy + (r * 1.2) * Math.sin(textRadian);
                 text.setAttribute('x', textX - 25);
-                text.setAttribute('y', textY);
+                text.setAttribute('y', textY + 10);
                 domSvg.appendChild(text);
                 previousPx = nextPx;
                 previousPy = nextPy;
@@ -466,38 +503,7 @@
 
         }
 
-        function barMouseOver(i, pointX, pointY) {
-            document.getElementById('rect' + i).setAttribute('stroke', 'black');                // 長方條加框
-            document.getElementById('rect' + i).style.stroke = 'black';
-            document.getElementById('text' + i).style.fontWeight = 'bold';                      // 姓名加粗
 
-            let hoverLine = document.createElementNS('http://www.w3.org/2000/svg', 'line');     // 加水平虛線
-            hoverLine.setAttribute('id', 'hoverLine');
-            hoverLine.setAttribute('stroke', 'gray');
-            hoverLine.setAttribute('stroke-width', 1);
-            hoverLine.setAttribute('stroke-dasharray', '5,5');
-            hoverLine.setAttribute('x1', pointX);
-            hoverLine.setAttribute('y1', pointY);
-            hoverLine.setAttribute('x2', padLeft);
-            hoverLine.setAttribute('y2', pointY);
-            domSvg.appendChild(hoverLine);
-
-            let hoverText = document.createElementNS('http://www.w3.org/2000/svg', 'text');
-            hoverText.textContent = arySale[i];
-            hoverText.setAttribute('id', 'hoverText');
-            hoverText.setAttribute('x', pointX - 12);
-            hoverText.setAttribute('y', pointY - 6);
-            hoverText.setAttribute('fontSize', 18);
-            hoverText.setAttribute('fontWeight', 'bold');
-            domSvg.appendChild(hoverText);
-
-        }
-        function barMouseOut(i) {             // 滑鼠移開恢復
-            document.getElementById('text' + i).style.fontWeight = 'normal';
-            document.getElementById('rect' + i).style.stroke = aryColor[i];
-            document.getElementById('hoverLine').remove();
-            document.getElementById('hoverText').remove();
-        }
         function generateAxis() {               // Reference:  https://stackoverflow.com/questions/7547117/add-a-new-line-in-svg-bug-cannot-see-the-line
             let axisX = document.createElementNS('http://www.w3.org/2000/svg','line');      // use document.createElementNS() namespace??
             axisX.setAttribute('x1', padLeft);
