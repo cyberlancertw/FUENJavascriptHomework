@@ -144,7 +144,7 @@
                     var cursor = e.target.result;
                     if (cursor) {
 
-                        aryName.push(cursor.value.Name);
+                        aryName.push(cursor.value.Name);        // 撈出資料放入兩陣列
                         arySale.push(cursor.value.Sale);
 
                         dataCount++;
@@ -152,8 +152,9 @@
                         cursor.continue();
                     }
                     else {
-                        InitializeUI();
+                        InitializeUI();             // 撈完就建 UI
                     }
+                    
                 }
             }
 
@@ -449,7 +450,7 @@
             let r = svgSize / 3;
             previousPx = cx + r;
             previousPy = cy;
-
+            console.log(previousPx);
             for (let i = 0; i < dataCount; i++) {
                 let ratio = arySale[i] / sumSale;
                 let largeArc = ratio > 0.5 ? 1 : 0;     // 畫優弧or劣弧
@@ -462,11 +463,11 @@
                 let nextPy = cy + r * Math.sin(sumRadian);
                 let fan = document.createElementNS('http://www.w3.org/2000/svg', 'path');
                 fan.setAttribute('id', 'fan' + i);
-                fan.setAttribute('stroke', 'white');
-                fan.setAttribute('stroke-width', 2);
+                fan.setAttribute('stroke-width', 0);
                 fan.setAttribute('fill', aryColor[i]);
                 fan.setAttribute('d', `M ${cx} ${cy} L ${previousPx} ${previousPy} A ${r} ${r} 0 ${largeArc} 1 ${nextPx} ${nextPy} Z`);
-                fan.addEventListener('mouseover', m => pieMouseOver(i, previousPx));
+                let previousPxTemp = previousPx;
+                fan.addEventListener('mouseover', m => pieMouseOver(i, previousPxTemp));
                 fan.addEventListener('mouseout', m => pieMouseOut(i));
 
                 let text = document.createElementNS('http://www.w3.org/2000/svg', 'text');
@@ -495,12 +496,9 @@
             let preIndex = (i + dataCount - 1) % dataCount;
             let nextIndex = (i + 1) % dataCount;
             fan.setAttribute('stroke', 'black');
-            fan.setAttribute('stroke-width', 2);
-            document.getElementById('fan' + preIndex).setAttribute('stroke', aryColor[preIndex]);
-            document.getElementById('fan' + preIndex).setAttribute('stroke-width', 0);
-            document.getElementById('fan' + nextIndex).setAttribute('stroke', aryColor[nextIndex]);
-            document.getElementById('fan' + nextIndex).setAttribute('stroke-width', 0);
+            fan.setAttribute('stroke-width', 1);
             text.setAttribute('fontWeight', 'bold');
+            console.log(`previousPx=${previousPx}, svgSize = ${svgSize}`);
             text.textContent = previousPx < svgSize / 2 ? `${aryName[i]} ${arySale[i]}` : `${arySale[i]} ${aryName[i]}`;
         }
         function pieMouseOut(i) {
@@ -508,16 +506,24 @@
             let text = document.getElementById('text' + i);
             let preIndex = (i + dataCount - 1) % dataCount;
             let nextIndex = (i + 1) % dataCount;
-            fan.setAttribute('stroke', 'white');
-            fan.setAttribute('stroke-width', 2);
-            document.getElementById('fan' + preIndex).setAttribute('stroke', 'white');
-            document.getElementById('fan' + nextIndex).setAttribute('stroke', 'white');
+            fan.setAttribute('stroke', '');
+            fan.setAttribute('stroke-width', 0);
             text.setAttribute('fontWeight', 'normal');
             text.textContent = aryName[i];
         }
 
         function UpdateData() {
-            //  寫進資料庫
+
+            let objStore = db.transaction(['tSalesman'], 'readwrite').objectStore('tSalesman');
+            //for (let i = 0; i < dataCount; i++) {
+            //    let getRequest = objStore.get(i + 1);
+            //    getRequest.onsuccess = function (event) {
+            //        let data = getRequest.result;
+            //        data.Name = aryName[i];
+            //        data.Sale = arySale[i];
+            //        objStore.put(data);
+            //    }       // https://developer.mozilla.org/en-US/docs/Web/API/IDBObjectStore/put  mozilla 說 put 可update 但一直給我insert... 放棄
+            //}
 
         }
 
