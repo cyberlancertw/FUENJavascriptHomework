@@ -253,25 +253,13 @@
             padTop = svgSize / 10;
 
             switch (chartSelect) {
-                case 1: DrawLineChart(); return;
-                case 2: DrawBarChart(); return;
-                case 3: DrawPieChart(); return;
-                case 4:
+                case 1: DrawLineChart(); break;
+                case 2: DrawBarChart(); break;
+                case 3: DrawPieChart(); break;
+                case 4: 
                 default: break;
             }
-            //if (chartSelect == 1) {
-            //    DrawLineChart();
-            //}
-            //else if (chartSelect == 2)
-            //{
-            //    DrawBarChart();
 
-            //}
-            //else
-            //{
-
-            //    DrawPieChart();
-            //}
         }
 
         function RefreshData() {
@@ -478,6 +466,8 @@
                 fan.setAttribute('stroke-width', 2);
                 fan.setAttribute('fill', aryColor[i]);
                 fan.setAttribute('d', `M ${cx} ${cy} L ${previousPx} ${previousPy} A ${r} ${r} 0 ${largeArc} 1 ${nextPx} ${nextPy} Z`);
+                fan.addEventListener('mouseover', m => pieMouseOver(i, previousPx));
+                fan.addEventListener('mouseout', m => pieMouseOut(i));
 
                 let text = document.createElementNS('http://www.w3.org/2000/svg', 'text');
                 text.textContent = aryName[i];
@@ -485,10 +475,13 @@
                 text.setAttribute('color', 'black');
                 text.setAttribute('font-size', 20);
 
-                let textX = cx + (r * 1.2) * Math.cos(textRadian);
-                let textY = cy + (r * 1.2) * Math.sin(textRadian);
+                let textX = cx + (r * 1.3) * Math.cos(textRadian);
+                let textY = cy + (r * 1.3) * Math.sin(textRadian);
                 text.setAttribute('x', textX - 25);
                 text.setAttribute('y', textY + 10);
+                text.addEventListener('mouseover', m => pieMouseOver(i));
+                text.addEventListener('mouseout', m => pieMouseOut(i));
+
                 domSvg.appendChild(text);
                 previousPx = nextPx;
                 previousPy = nextPy;
@@ -496,7 +489,32 @@
             }
 
         }
-
+        function pieMouseOver(i, previousPx) {
+            let fan = document.getElementById('fan' + i);
+            let text = document.getElementById('text' + i);
+            let preIndex = (i + dataCount - 1) % dataCount;
+            let nextIndex = (i + 1) % dataCount;
+            fan.setAttribute('stroke', 'black');
+            fan.setAttribute('stroke-width', 2);
+            document.getElementById('fan' + preIndex).setAttribute('stroke', aryColor[preIndex]);
+            document.getElementById('fan' + preIndex).setAttribute('stroke-width', 0);
+            document.getElementById('fan' + nextIndex).setAttribute('stroke', aryColor[nextIndex]);
+            document.getElementById('fan' + nextIndex).setAttribute('stroke-width', 0);
+            text.setAttribute('fontWeight', 'bold');
+            text.textContent = previousPx < svgSize / 2 ? `${aryName[i]} ${arySale[i]}` : `${arySale[i]} ${aryName[i]}`;
+        }
+        function pieMouseOut(i) {
+            let fan = document.getElementById('fan' + i);
+            let text = document.getElementById('text' + i);
+            let preIndex = (i + dataCount - 1) % dataCount;
+            let nextIndex = (i + 1) % dataCount;
+            fan.setAttribute('stroke', 'white');
+            fan.setAttribute('stroke-width', 2);
+            document.getElementById('fan' + preIndex).setAttribute('stroke', 'white');
+            document.getElementById('fan' + nextIndex).setAttribute('stroke', 'white');
+            text.setAttribute('fontWeight', 'normal');
+            text.textContent = aryName[i];
+        }
 
         function UpdateData() {
             //  寫進資料庫
