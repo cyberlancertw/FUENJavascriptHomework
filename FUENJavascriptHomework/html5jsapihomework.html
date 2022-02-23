@@ -100,10 +100,8 @@
         var domAreaData = document.getElementById('areaData');
         var domAreaDraw = document.getElementById('areaDraw');
         var domSvg = document.getElementById('svgDraw');
-
+        var xmls = 'http://www.w3.org/2000/svg';               // Reference:  https://stackoverflow.com/questions/7547117/add-a-new-line-in-svg-bug-cannot-see-the-line
         var dataCount = 0;
-        //var dataCount = 12;
-
         var aryName = [];
         var arySale = [];
         var aryColor = ['wheat', 'violet', 'aqua', 'blanchedalmond', 'khaki', 'cyan', 'mistyrose', 'cornsilk', 'turquoise', 'peachpuff', 'lightblue', 'burlywood'];
@@ -177,7 +175,7 @@
         function InitializeUI() {
             console.log(dataCount);
 
-            for (let i = 0; i < dataCount; i++) {
+            for (let i = 0; i < dataCount; i++) {                   // 每個銷售員一個div，裡面兩個input為姓名和業績
                 let domDiv = document.createElement('div');
                 domDiv.setAttribute('id', 'divMan' + i);
                 let txtName = document.createElement('input');
@@ -190,12 +188,14 @@
                 txtSale.setAttribute('id', 'txtSale' + i);
 
 
-                txtName.addEventListener('change', function () {
-                    aryName[i] = this.value;                            // 改完銷售員姓名，存入資料，重畫圖
+                txtName.addEventListener('change', function () {        // 改完銷售員姓名，存入資料，更新按鈕出現，重畫圖
+                    aryName[i] = this.value;
+                    document.getElementById('btnUpdate').style.visibility = 'visible';
                     RefreshSVG();
                 });
-                txtSale.addEventListener('change', function () {
-                    arySale[i] = parseInt(this.value);                  // 改完業績，存入資料(要轉型不然會出事，血淚教訓)，重畫圖
+                txtSale.addEventListener('change', function () {        // 改完業績，存入資料(要轉型不然會出事，血淚教訓)，更新按鈕出現，重畫圖
+                    arySale[i] = parseInt(this.value);
+                    document.getElementById('btnUpdate').style.visibility = 'visible';
                     RefreshSVG();
                 });
 
@@ -203,13 +203,14 @@
                 domDiv.appendChild(txtSale);
                 domAreaData.appendChild(domDiv);
             }
-            let domBtn = document.createElement('button');
+            let domBtn = document.createElement('button');      // 更新至資料庫按鈕，預設隱藏，有條改才出現
             domBtn.setAttribute('id', 'btnUpdate');
             domBtn.textContent = '更新至資料庫';
-            domBtn.addEventListener('click', UpdateData);
+            domBtn.style.visibility = 'hidden';
+            domBtn.addEventListener('click', UpdateData);       // 註冊click事件
             domAreaData.appendChild(domBtn);
 
-            let domSelect = document.createElement('select');
+            let domSelect = document.createElement('select');                           // 下拉式選單
             let optName = ['統計圖表','折線圖', '長條圖', '圓餅圖','第三方神奇圖圖'];
             for (let i in optName) {
                 let opt = document.createElement('option');
@@ -218,7 +219,7 @@
                 domSelect.appendChild(opt);
             }
             domSelect.setAttribute('id', 'selectPattern');
-            domSelect.addEventListener('change', RefreshSVG);
+            domSelect.addEventListener('change', RefreshSVG);                           // 註冊change事件
             domAreaData.appendChild(domSelect);
 
             let divWidth = document.createElement('div');
@@ -284,7 +285,7 @@
 
             let distance = (svgSize - padLeft * 4) / (dataCount - 1);
             let totalHeight = svgSize - padTop * 4;
-            let poly = document.createElementNS('http://www.w3.org/2000/svg', 'polyline');
+            let poly = document.createElementNS(xmls, 'polyline');
             let points = [];
             for (let i = 0; i < dataCount; i++) {
                 let ratio = overAll == 0 ? 0.5 : (arySale[i] - minData) / overAll;          // 當所有值都相同時，資料擺中間
@@ -292,7 +293,7 @@
                 let pointY = padTop * 2 + totalHeight * (1 - ratio);
                 points.push(`${pointX},${pointY}`);
 
-                let circ = document.createElementNS('http://www.w3.org/2000/svg', 'circle');        // 畫節點
+                let circ = document.createElementNS(xmls, 'circle');        // 畫節點
                 circ.setAttribute('id', 'circ' + i);
                 circ.setAttribute('cx', pointX);
                 circ.setAttribute('cy', pointY);
@@ -301,7 +302,7 @@
                 circ.addEventListener('mouseout', m => lineMouseOut(i));
                 domSvg.appendChild(circ);
 
-                let text = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+                let text = document.createElementNS(xmls, 'text');
                 text.setAttribute('id', 'text' + i);
                 text.textContent = aryName[i];
                 text.className = 'salesName';
@@ -347,7 +348,7 @@
             text.style.fontWeight = 'bold';
             text.textContent = `${aryName[i]} ${arySale[i]}`;
             document.getElementById('circ' + i).style.r = 6;
-            let hoverLine = document.createElementNS('http://www.w3.org/2000/svg', 'line');     // 加水平虛線
+            let hoverLine = document.createElementNS(xmls, 'line');     // 加水平虛線
             hoverLine.setAttribute('id', 'hoverLine');
             hoverLine.setAttribute('stroke', 'gray');
             hoverLine.setAttribute('stroke-width', 1);
@@ -379,7 +380,7 @@
                 let pointX = padLeft * 2 + distance * i;
                 let pointY = padTop * 2 + totalHeight * (1 - ratio);
 
-                let rect = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
+                let rect = document.createElementNS(xmls, 'rect');
                 rect.setAttribute('id', 'rect' + i);
                 rect.setAttribute('x', pointX - barWidth / 2);
                 rect.setAttribute('y', pointY);
@@ -393,7 +394,7 @@
 
                 domSvg.appendChild(rect);
 
-                let text = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+                let text = document.createElementNS(xmls, 'text');
                 text.setAttribute('id', 'text' + i);
                 text.textContent = aryName[i];
                 text.className = 'salesName';
@@ -413,7 +414,7 @@
             document.getElementById('rect' + i).style.stroke = 'black';
             document.getElementById('text' + i).style.fontWeight = 'bold';                      // 姓名加粗
 
-            let hoverLine = document.createElementNS('http://www.w3.org/2000/svg', 'line');     // 加水平虛線
+            let hoverLine = document.createElementNS(xmls, 'line');     // 加水平虛線
             hoverLine.setAttribute('id', 'hoverLine');
             hoverLine.setAttribute('stroke', 'gray');
             hoverLine.setAttribute('stroke-width', 1);
@@ -424,7 +425,7 @@
             hoverLine.setAttribute('y2', pointY);
             domSvg.appendChild(hoverLine);
 
-            let hoverText = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+            let hoverText = document.createElementNS(xmls, 'text');
             hoverText.textContent = arySale[i];
             hoverText.setAttribute('id', 'hoverText');
             hoverText.setAttribute('x', pointX - 12);
@@ -461,75 +462,80 @@
                 sumRadian += theta;
                 let nextPx = cx + r * Math.cos(sumRadian);
                 let nextPy = cy + r * Math.sin(sumRadian);
-                let fan = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+                let fan = document.createElementNS(xmls, 'path');
                 fan.setAttribute('id', 'fan' + i);
                 fan.setAttribute('stroke-width', 0);
                 fan.setAttribute('fill', aryColor[i]);
                 fan.setAttribute('d', `M ${cx} ${cy} L ${previousPx} ${previousPy} A ${r} ${r} 0 ${largeArc} 1 ${nextPx} ${nextPy} Z`);
-                let previousPxTemp = previousPx;
-                fan.addEventListener('mouseover', m => pieMouseOver(i, previousPxTemp));
+                fan.addEventListener('mouseover', m => pieMouseOver(i, textRadian));
                 fan.addEventListener('mouseout', m => pieMouseOut(i));
 
-                let text = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+                let text = document.createElementNS(xmls, 'text');
                 text.textContent = aryName[i];
                 text.setAttribute('id', 'text' + i);
                 text.setAttribute('color', 'black');
-                text.setAttribute('font-size', 20);
+                let size = document.getElementById('txtWidth').value < 700 ? 14 : 18;
+                text.setAttribute('font-size', size);
 
-                let textX = cx + (r * 1.3) * Math.cos(textRadian);
-                let textY = cy + (r * 1.3) * Math.sin(textRadian);
+                let textX = cx + (r * 0.85) * Math.cos(textRadian);
+                let textY = cy + (r * 0.85) * Math.sin(textRadian);
                 text.setAttribute('x', textX - 25);
                 text.setAttribute('y', textY + 10);
-                text.addEventListener('mouseover', m => pieMouseOver(i));
+                text.addEventListener('mouseover', m => pieMouseOver(i, textRadian));
                 text.addEventListener('mouseout', m => pieMouseOut(i));
 
-                domSvg.appendChild(text);
                 previousPx = nextPx;
                 previousPy = nextPy;
                 domSvg.appendChild(fan);
+                domSvg.appendChild(text);
             }
 
         }
-        function pieMouseOver(i, previousPx) {
+        function pieMouseOver(i, textRadian) {
             let fan = document.getElementById('fan' + i);
             let text = document.getElementById('text' + i);
-            let preIndex = (i + dataCount - 1) % dataCount;
-            let nextIndex = (i + 1) % dataCount;
             fan.setAttribute('stroke', 'black');
             fan.setAttribute('stroke-width', 1);
-            text.setAttribute('fontWeight', 'bold');
+            text.setAttribute('font-weight', 'bold');
             console.log(`previousPx=${previousPx}, svgSize = ${svgSize}`);
-            text.textContent = previousPx < svgSize / 2 ? `${aryName[i]} ${arySale[i]}` : `${arySale[i]} ${aryName[i]}`;
+            let textPercent = document.createElementNS(xmls, 'text');
+            textPercent.textContent = (arySale[i] * 100 / sumSale).toFixed() + '%';
+            textPercent.setAttribute('id', 'textPercent');
+            textPercent.setAttribute('color', 'black');
+            textPercent.setAttribute('font-size', '14');
+            textPercent.setAttribute('x', svgSize / 2 + svgSize / 6 * Math.cos(textRadian) - 10);
+            textPercent.setAttribute('y', svgSize / 2 + svgSize / 6 * Math.sin(textRadian) + 8);
+            domSvg.appendChild(textPercent);
         }
         function pieMouseOut(i) {
             let fan = document.getElementById('fan' + i);
             let text = document.getElementById('text' + i);
-            let preIndex = (i + dataCount - 1) % dataCount;
-            let nextIndex = (i + 1) % dataCount;
+            document.getElementById('textPercent').remove();
             fan.setAttribute('stroke', '');
             fan.setAttribute('stroke-width', 0);
-            text.setAttribute('fontWeight', 'normal');
+            text.setAttribute('font-weight', 'normal');
             text.textContent = aryName[i];
         }
 
         function UpdateData() {
 
             let objStore = db.transaction(['tSalesman'], 'readwrite').objectStore('tSalesman');
-            //for (let i = 0; i < dataCount; i++) {
-            //    let getRequest = objStore.get(i + 1);
-            //    getRequest.onsuccess = function (event) {
-            //        let data = getRequest.result;
-            //        data.Name = aryName[i];
-            //        data.Sale = arySale[i];
-            //        objStore.put(data);
-            //    }       // https://developer.mozilla.org/en-US/docs/Web/API/IDBObjectStore/put  mozilla 說 put 可update 但一直給我insert... 放棄
-            //}
+            for (let i = 0; i < dataCount; i++) {
+                let getRequest = objStore.get(i + 1);
+                getRequest.onsuccess = function (event) {
+                    let data = getRequest.result;
+                    data.Name = aryName[i];
+                    data.Sale = arySale[i];
+                    objStore.put(data, i+1);        // 沒有第二個auguement的key，會變成insert
+                }
+            }
+            document.getElementById('btnUpdate').style.visibility = 'hidden'
 
         }
 
 
-        function generateAxis() {               // Reference:  https://stackoverflow.com/questions/7547117/add-a-new-line-in-svg-bug-cannot-see-the-line
-            let axisX = document.createElementNS('http://www.w3.org/2000/svg','line');      // use document.createElementNS() namespace??
+        function generateAxis() {
+            let axisX = document.createElementNS(xmls,'line');      // use document.createElementNS() namespace??
             axisX.setAttribute('x1', padLeft);
             axisX.setAttribute('y1', svgSize - padTop);
             axisX.setAttribute('x2', svgSize - padLeft);
@@ -537,7 +543,7 @@
             axisX.setAttribute('id', 'axisX');
             domSvg.appendChild(axisX);
 
-            let axisY = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+            let axisY = document.createElementNS(xmls, 'line');
             axisY.setAttribute('x1', padLeft);
             axisY.setAttribute('y1', svgSize - padTop);
             axisY.setAttribute('x2', padLeft);
@@ -545,7 +551,7 @@
             axisY.setAttribute('id', 'axisY');
             domSvg.appendChild(axisY);
 
-            let text = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+            let text = document.createElementNS(xmls, 'text');
             text.textContent = '業績';
             text.setAttribute('x', padLeft / 4);
             text.setAttribute('y', padTop * 1.2);
@@ -553,7 +559,7 @@
             text.setAttribute('fontSize', 16);
             domSvg.appendChild(text);
 
-            text = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+            text = document.createElementNS(xmls, 'text');
             text.textContent = '(千元)';
             text.setAttribute('x', padLeft / 4);
             text.setAttribute('y', padTop * 1.5);
@@ -564,13 +570,13 @@
             let distanceY = overAll == 0 ? 0 : (svgSize - padTop * 4) / (maxData - minData);        // 算y軸上每一刻度之間的px
 
             for (let i = minData - 2; i <= maxData + 2; i++) {
-                let ySegment = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+                let ySegment = document.createElementNS(xmls, 'line');
                 ySegment.setAttribute('x1', padLeft);
                 ySegment.setAttribute('y1', padTop * 2 + distanceY * (maxData - i));
 
                 if (i % 10 == 0) {
                     ySegment.setAttribute('x2', padLeft + 20);                                      // 10的倍數時畫長一點
-                    let segText = document.createElementNS('http://www.w3.org/2000/svg', 'text');   // 並加上文字
+                    let segText = document.createElementNS(xmls, 'text');   // 並加上文字
                     segText.textContent = i;
                     segText.setAttribute('x', padLeft / 2);
                     segText.setAttribute('y', padTop * 2.1 + distanceY * (maxData - i));
