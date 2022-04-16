@@ -1,0 +1,225 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <title>作業9</title>
+    <style>
+        html{
+            font-size: 20px;
+        }
+        input{
+            font-size: 1rem;
+            width: 4rem;
+            height: 2rem;
+            margin: 1rem;
+        }
+        #svgShow{
+            border: 1px solid gray;
+        }
+        #btnGo{
+            font-size: 1rem;
+            width: 4rem;
+            border: none;
+            border-radius: 1rem;
+            background-color:lightgoldenrodyellow;
+            padding: 5px
+        }
+    </style>
+    <script>
+        var svgWidth = 640, svgHeight = 375, padLeft = 20, padTop = 10;
+    </script>
+</head>
+<body onload="init()">
+    <input type="number" id="inputCount" value="3" step="1" max="10" min="3" />
+    <button id="btnGo">開始</button>
+    <p></p>
+    <svg id="svgShow"></svg>
+    <p id="pShow"></p>
+    <script>
+        var stepCount = 0, xmls = 'http://www.w3.org/2000/svg', bSize = 30, padTop = 100, padLeft = 50;
+        const colorList = ['wheat', 'violet', 'aqua', 'blanchedalmond', 'khaki', 'cyan', 'mistyrose', 'cornsilk', 'turquoise', 'peachpuff', 'lightblue', 'burlywood'];
+        const inputCount = document.getElementById('inputCount');
+        const pShow = document.getElementById('pShow');
+        const btnGo = document.getElementById('btnGo');
+        const svgShow = document.getElementById('svgShow');
+        var movingBar, toBar, movingInterval, movingTop, targetX, targetY;
+
+        function init() {
+            btnGo.addEventListener('click', () => {
+                pShow.textContent = '';
+                stepCount = parseInt(inputCount.value);
+                Hanoi(stepCount, 0, 1);
+
+                //moveBlock(0, 2);
+
+            });
+
+            inputCount.addEventListener('change', () => {
+                stepCount = parseInt(inputCount.value);
+                RefreshSVG(stepCount);
+                movingTop = padTop - bSize * 2;
+            });
+
+            
+        }
+
+        function Hanoi(moveCount, fromIdx, toIdx){
+            let lastIdx = 3 - fromIdx - toIdx;
+
+            if (moveCount == 1) {
+                moveBlock(fromIdx, toIdx);
+                pShow.textContent += `(${fromIdx},${toIdx})`;
+
+            }
+            else if(moveCount == 2){
+                pShow.textContent += `(${fromIdx},${lastIdx})`;
+                pShow.textContent += `(${fromIdx},${toIdx})`;
+                pShow.textContent += `(${lastIdx},${toIdx})`;
+            }
+            else{
+                Hanoi(moveCount-1, fromIdx, lastIdx);
+                Hanoi(1, fromIdx, toIdx);
+                Hanoi(moveCount-1, lastIdx, toIdx);
+            }
+        }
+        
+        function moveBlock(fromIdx, toIdx) {
+            //let fromGroup = [];
+            //document.querySelectorAll(`[data-position="${fromIdx}"]`).forEach(dom => fromGroup.push(dom));
+            //console.log(fromGroup);
+            //let toGroup = document.querySelectorAll(`[data-position="${toIdx}"]`);
+            //let topFrom = fromGroup.reduce((a, b) => {
+            //    console.log(a);
+            //    console.log(b);
+            //    return parseInt(a.y) < parseInt(b.y) ? a : b;
+            //});
+            //console.log(topFrom);
+
+            
+            movingBar = document.querySelector(`[data-position="${fromIdx}"]`);
+            toBar = document.querySelector(`[data-position="${toIdx}"]`);
+            movingInterval = window.setInterval(() => {
+                if (toBar) {
+                    targetY = toBar.getAttribute('y') - bSize;
+                }
+                else {
+                    targetY = padTop + stepCount * bSize;
+                }
+                movingCallback('u', fromIdx, toIdx);
+            }, 5);
+            
+
+            console.log(movingBar);
+            
+        }
+        function movingCallback(direction, fromIdx, toIdx) {
+            switch (direction) {
+                case 'u': {
+                    let oldY = parseInt(movingBar.getAttribute('y'));
+                    if (oldY == movingTop) {
+                        window.clearInterval(movingInterval);
+                        movingBar.setAttribute('y', padTop - bSize * 2);
+
+                        let oldX = parseInt(movingBar.getAttribute('x'));
+                        targetX = oldX + (toIdx - fromIdx) * bSize * (stepCount * 2 + 2);
+                        if (fromIdx < toIdx) {
+                            movingInterval = window.setInterval(() => {
+                                movingCallback('r', fromIdx, toIdx);
+                            }, 5);
+                        }
+                        else {
+                            movingInterval = window.setInterval(() => {
+                                movingCallback('l', fromIdx, toIdx);
+                            }, 5);
+                        }
+                        return;
+                    }
+                    let newY = (oldY - 3) <= movingTop ? movingTop : (oldY - 3);
+                    movingBar.setAttribute('y', newY);
+                    break;
+                }
+
+                case 'd': {
+                    let oldY = parseInt(movingBar.getAttribute('y'));
+                    if (oldY == targetY) {
+                        window.clearInterval(movingInterval);
+                        movingBar.setAttribute('data-position', toIdx);
+                        movingInterval = window.setInterval(() => {
+
+                        }, 5);
+                        return;
+                    }
+                    let newY = (oldY + 3) >= targetY ? targetY : (oldY + 3);
+                    movingBar.setAttribute('y', newY);
+                    break;
+                }
+                case 'l': {
+                    
+                    break;
+                }
+                case 'r': {
+                    console.log(targetX);
+                    let oldX = parseInt(movingBar.getAttribute('x'));
+                    if (oldX == targetX) {
+                        console.log('!');
+                        window.clearInterval(movingInterval);
+                        movingBar.setAttribute('x', targetX);
+                        movingInterval = window.setInterval(()=>{
+                            movingCallback('d', fromIdx, toIdx);
+                        }, 5);
+                        return;
+                    }
+                    let newX = (oldX + 5 >= targetX) ? (targetX) : (oldX + 5);
+                    movingBar.setAttribute('x', newX);
+                    break;
+                }
+                default:
+            }
+        }
+        function RefreshSVG(n) {
+            svgShow.innerHTML = '';
+            svgShow.setAttribute('width', padLeft * 2 + bSize * (3 * (2 * n + 1) + 2));
+            svgShow.setAttribute('height', padTop + bSize * (n + 3));
+
+            let docFrag = document.createDocumentFragment();
+
+            for (let i = 0; i < n; i++) {                                   // 畫 n 條橫bar
+                let domRect = document.createElementNS(xmls, 'rect');
+                domRect.setAttribute('data-position', 0);
+                domRect.setAttribute('id', 'bar' + i);
+                domRect.setAttribute('width', bSize * (2 * i + 3));
+                domRect.setAttribute('height', bSize);
+                domRect.setAttribute('x', padLeft + bSize * (n - 1 - i));
+                domRect.setAttribute('y', padTop + bSize * (i + 1));
+                domRect.setAttribute('stroke', colorList[i]);
+                domRect.setAttribute('fill', colorList[i]);
+
+                docFrag.appendChild(domRect);
+            }
+            
+            for (let i = 0; i < 3; i++) {                                   // 畫 3 條直柱子
+                let domRect = document.createElementNS(xmls, 'rect');
+                domRect.setAttribute('width', bSize * 0.5);
+                domRect.setAttribute('height', bSize * (n + 1));
+                domRect.setAttribute('x', padLeft + bSize * (n + 0.25 + i * (n + 1) * 2));
+                domRect.setAttribute('y', padTop);
+                domRect.setAttribute('stroke', 'gray');
+                domRect.setAttribute('fill', 'gray');
+
+                docFrag.appendChild(domRect);
+            }
+
+            let domBottom = document.createElementNS(xmls, 'rect');         // 畫底座
+            domBottom.setAttribute('width', bSize * (3 * (2 * n + 1 )+ 2 ));
+            domBottom.setAttribute('height', bSize / 2);
+            domBottom.setAttribute('x', padLeft);
+            domBottom.setAttribute('y', padTop + bSize * (n + 1));
+            domBottom.setAttribute('stroke', 'gray');
+            domBottom.setAttribute('fill', 'gray');
+            docFrag.appendChild(domBottom);
+
+            svgShow.appendChild(docFrag);
+        }
+    </script>
+</body>
+</html>

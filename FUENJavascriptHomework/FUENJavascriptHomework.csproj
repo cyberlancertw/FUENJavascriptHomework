@@ -84,6 +84,7 @@
     <Content Include="css\bootstrap.rtl.css" />
     <Content Include="css\bootstrap.rtl.min.css" />
     <Content Include="exercise.html" />
+    <Content Include="homework9.html" />
     <Content Include="html5jsapihomework.html" />
     <Content Include="homework8.html" />
     <Content Include="homework7.html" />
